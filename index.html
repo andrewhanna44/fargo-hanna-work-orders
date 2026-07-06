@@ -862,6 +862,7 @@
     if(s.address) lines.push(s.address);
     if(s.phone) lines.push(s.phone);
     if(s.email) lines.push(s.email);
+    if(s.hours) lines.push(s.hours);
     return lines.join("\n");
   }
   function emailWorkOrder(o){
@@ -911,7 +912,7 @@
   /* ---------------- Print document ---------------- */
   function populatePrint(o){
     var s = state.settings;
-    var contact = [s.address, s.phone, s.email].filter(Boolean).join("  ·  ");
+    var contact = [s.address, s.phone, s.email, s.hours].filter(Boolean).join("  ·  ");
     document.getElementById("print-root").innerHTML = ''
     + '<div class="print-doc">'
     +   '<div class="guard"></div>'
@@ -986,6 +987,7 @@
     +     field("Phone","set_phone",s.phone,{type:"tel"})
     +     field("Email","set_email",s.email,{type:"email"})
     +     '<div class="field"><label for="set_address">Address</label><input id="set_address" value="'+esc(s.address)+'"></div>'
+    +     '<div class="field"><label for="set_hours">Store hours</label><input id="set_hours" value="'+esc(s.hours||"")+'" placeholder="e.g. Mon–Sat 9am–5pm"></div>'
     +   '</div>'
     +   '<div style="margin-top:16px"><button class="btn primary" id="saveShop">Save shop details</button></div>'
     + '</div>'
@@ -1013,6 +1015,7 @@
       state.settings.phone = main.querySelector("#set_phone").value.trim();
       state.settings.email = main.querySelector("#set_email").value.trim();
       state.settings.address = main.querySelector("#set_address").value.trim();
+      state.settings.hours = main.querySelector("#set_hours").value.trim();
       saveSettings(); toast("Shop details saved");
     });
     main.querySelector("#expJson").addEventListener("click", exportJSON);
