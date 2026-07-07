@@ -102,6 +102,8 @@
   .btn.primary:hover{ background:var(--indigo-700); }
   .btn.madder{ background:var(--madder); border-color:var(--madder); color:#fff; }
   .btn.madder:hover{ background:var(--madder-700); }
+  .btn.sage{ background:var(--sage); border-color:var(--sage); color:#fff; }
+  .btn.sage:hover{ background:#3c4d3e; border-color:#3c4d3e; }
   .btn.ghost{ background:transparent; }
   .btn.danger{ color:var(--madder); border-color:#e3c6c9; }
   .btn.danger:hover{ background:#faf0f1; border-color:#d9a9ae; }
@@ -148,11 +150,32 @@
   }
   .list-head .r{ text-align:right; }
 
+  /* ---------- Customers ---------- */
+  .cust-row{
+    display:grid; grid-template-columns:1.4fr 120px 1fr 1.3fr 140px; gap:14px; align-items:center;
+    background:var(--white); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin-bottom:9px; cursor:pointer;
+    transition:border-color .12s, box-shadow .12s;
+  }
+  .cust-row:hover{ border-color:#c9bfa8; box-shadow:0 2px 10px rgba(33,30,26,.07); }
+  .cust-row .name{ font-weight:600; }
+  .cust-row .muted{ color:var(--ink-soft); font-size:13.5px; }
+  .cust-list-head{
+    display:grid; grid-template-columns:1.4fr 120px 1fr 1.3fr 140px; gap:14px;
+    padding:0 16px 8px; font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-soft);
+  }
+
   .badge{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; letter-spacing:.02em; white-space:nowrap; }
   .badge.new{ background:var(--indigo-100); color:var(--indigo); }
   .badge.progress{ background:#f5e6c9; color:#8a641b; }
   .badge.ready{ background:#dfe9e0; color:#3c5340; }
   .badge.picked{ background:#e7e2d7; color:#6b6353; }
+  .badge.canceled{ background:#f3d9db; color:var(--madder-700); }
+  .cancel-banner{
+    background:#fbecee; border:1px solid #e3c6c9; color:var(--madder-700);
+    border-radius:8px; padding:12px 16px; margin-bottom:18px; font-size:13.5px; line-height:1.5;
+  }
+  .cancel-banner strong{ font-size:14px; }
 
   .type-pill{ display:inline-block; padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600; background:#efe9db; color:#7a6b4d; }
   .type-pill.cleaning{ background:#e2ebf1; color:#345a72; }
@@ -188,6 +211,12 @@
   .money-wrap{ position:relative; }
   .money-wrap::before{ content:"$"; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-soft); font-size:14.5px; }
   .money-wrap input{ padding-left:24px; }
+  .tax-toggle{ position:relative; display:inline-block; width:38px; height:22px; flex:0 0 auto; }
+  .tax-toggle input{ opacity:0; width:0; height:0; position:absolute; }
+  .tax-slider{ position:absolute; inset:0; background:#ccc; border-radius:22px; cursor:pointer; transition:background .15s; }
+  .tax-slider::before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .15s; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .tax-toggle input:checked + .tax-slider{ background:var(--sage); }
+  .tax-toggle input:checked + .tax-slider::before{ transform:translateX(16px); }
   .type-choose{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
   .type-choose label{
     display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer;
@@ -201,6 +230,41 @@
   .type-choose label.checked{ border-color:var(--indigo); background:var(--indigo-100); }
   .form-actions{ display:flex; gap:12px; justify-content:flex-end; align-items:center; border-top:1px solid var(--line); padding-top:20px; margin-top:4px; }
   .form-msg{ margin-right:auto; font-size:13px; color:var(--madder); }
+
+  /* ---------- Customer search / autocomplete ---------- */
+  .cust-picker{ position:relative; margin-bottom:16px; }
+  .cust-picker input{ background:var(--white); }
+  .cust-picker .ac-list{
+    position:absolute; left:0; right:0; top:calc(100% + 4px); z-index:20;
+    background:var(--white); border:1px solid var(--line); border-radius:var(--r);
+    box-shadow:0 8px 24px rgba(33,30,26,.14); max-height:240px; overflow-y:auto; display:none;
+  }
+  .cust-picker .ac-list.show{ display:block; }
+  .cust-picker .ac-item{ padding:9px 13px; cursor:pointer; border-bottom:1px dotted var(--line-soft); }
+  .cust-picker .ac-item:last-child{ border-bottom:0; }
+  .cust-picker .ac-item:hover, .cust-picker .ac-item.hi{ background:var(--indigo-100); }
+  .cust-picker .ac-item .n{ font-weight:600; font-size:14px; }
+  .cust-picker .ac-item .m{ font-size:12.5px; color:var(--ink-soft); }
+  .cust-picker .ac-empty{ padding:10px 13px; font-size:13px; color:var(--ink-soft); font-style:italic; }
+
+  /* ---------- Rugs (horizontal, up to 4 in a row) ---------- */
+  .rug-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .rug-col{ border:1px solid var(--line); border-radius:10px; padding:14px; background:#fbf9f4; }
+  .rug-col h4{ font-family:var(--display); font-size:13.5px; color:var(--indigo); margin:0 0 10px; font-weight:600; }
+  .rug-col textarea{ min-height:70px; }
+  .rug-col .field{ margin-bottom:10px; }
+  .rug-col .field:last-of-type{ margin-bottom:0; }
+
+  /* ---------- Rug diagram ---------- */
+  .rug-diagram-wrap{ margin-top:12px; padding:10px; background:#faf7f0; border:1px dashed var(--line); border-radius:8px; }
+  .rug-diagram-wrap .rdg-label{ font-size:10.5px; color:var(--ink-soft); margin-bottom:6px; line-height:1.35; }
+  .rug-diagram-canvas{ margin-bottom:6px; }
+  .rug-diagram-canvas svg{ width:100%; height:auto; display:block; cursor:crosshair; background:#fff; border-radius:6px; }
+  .rug-diagram-canvas.readonly svg{ cursor:default; }
+  .rug-clear-btn{ font-size:11.5px; padding:4px 10px; }
+  .print-rug-diagram{ width:150px; height:auto; flex:0 0 auto; }
+  .print-rug-flex{ display:flex; gap:14px; align-items:flex-start; }
+  .print-rug-flex .prf-text{ flex:1 1 auto; }
 
   /* ---------- Detail ---------- */
   .detail-actions{ display:flex; gap:9px; flex-wrap:wrap; margin-bottom:20px; }
@@ -276,7 +340,15 @@
   .logout-btn:hover{ background:rgba(255,255,255,.07); color:#fff; }
 
   /* ---------- Status buckets ---------- */
-  .buckets{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+  .bucket-all{
+    background:var(--white); border:1px solid var(--line); border-left:4px solid var(--madder); border-radius:10px;
+    padding:16px 20px; margin-bottom:12px; display:flex; align-items:baseline; gap:16px; cursor:pointer;
+    transition:border-color .12s, box-shadow .12s;
+  }
+  .bucket-all:hover{ border-color:#c9bfa8; box-shadow:0 2px 10px rgba(33,30,26,.07); }
+  .bucket-all .b-count{ font-family:var(--display); font-size:30px; font-weight:600; color:var(--ink); line-height:1; }
+  .bucket-all .b-label{ font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+  .buckets{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
   .bucket-card{
     background:var(--white); border:1px solid var(--line); border-radius:10px;
     padding:13px 15px; cursor:pointer; text-align:left;
@@ -289,7 +361,7 @@
   .bucket-card.b-progress{ border-left-color:var(--saffron); }
   .bucket-card.b-ready{ border-left-color:var(--sage); }
   .bucket-card.b-picked{ border-left-color:#a89f8c; }
-  .bucket-card.b-all{ border-left-color:var(--madder); }
+  .bucket-card.b-canceled{ border-left-color:var(--madder); }
   .bucket-card .b-count{ font-family:var(--display); font-size:24px; font-weight:600; color:var(--ink); line-height:1; }
   .bucket-card .b-label{ font-size:12px; color:var(--ink-soft); margin-top:5px; text-transform:uppercase; letter-spacing:.05em; }
   .bucket-card .b-alert{ display:inline-block; margin-left:6px; font-size:11px; color:var(--madder); font-weight:700; }
@@ -373,6 +445,8 @@
     .grid, .grid.thirds{ grid-template-columns:1fr; }
     .order-row, .list-head{ grid-template-columns:70px 1fr 90px; }
     .order-row .type-tag, .order-row .cost, .list-head .c-type, .list-head .c-cost{ display:none; }
+    .rug-row{ grid-template-columns:1fr; }
+    .buckets{ grid-template-columns:repeat(2,1fr); }
   }
 </style>
 </head>
@@ -395,6 +469,7 @@
     </div>
     <button class="nav-btn" data-nav="new"><span class="ico">＋</span> New work order</button>
     <button class="nav-btn" data-nav="list"><span class="ico">▦</span> Work orders</button>
+    <button class="nav-btn" data-nav="customers"><span class="ico">☺</span> Customers</button>
     <button class="nav-btn" data-nav="alerts"><span class="ico">⚑</span> Alerts <span class="nav-count" id="navCount" style="display:none">0</span></button>
     <button class="nav-btn" data-nav="settings"><span class="ico">⚙</span> Backup &amp; settings</button>
     <div class="nav-spacer"></div>
@@ -418,19 +493,60 @@
   var AUTH_KEY = "FH_AUTH_v1";
 
   var PRICE_DISCLAIMER = "Price subject to change pending any additional work required throughout the service process. Fargo Hanna will not perform any work outside the original scope without prior approval of the customer. We will always contact you to discuss before proceeding.";
+  var TAX_RATE = 0.075; // Durham / North Carolina sales tax
 
   /* ---------------- Storage ---------------- */
   var ORDERS_KEY = "FH_WORKORDERS_v1";
   var SETTINGS_KEY = "FH_SETTINGS_v1";
+  var CUSTOMERS_KEY = "FH_CUSTOMERS_v1";
   var storageOK = true;
 
+  // Old orders had a single `item` object. Migrate to a `rugs` array (up to 4) + a top-level `addons` field.
+  function migrateOrderShape(o){
+    if(!o.rugs){
+      var it = o.item || {};
+      o.rugs = [{ description: it.description||"", dimensions: it.dimensions||"", marks:[] }];
+      while(o.rugs.length < 4) o.rugs.push({ description:"", dimensions:"", marks:[] });
+      if(o.addons === undefined) o.addons = it.addons || "";
+    }
+    while(o.rugs.length < 4) o.rugs.push({ description:"", dimensions:"", marks:[] });
+    o.rugs.forEach(function(r){ if(!Array.isArray(r.marks)) r.marks = []; });
+    if(o.customerId === undefined) o.customerId = null;
+    if(o.cancelReason === undefined) o.cancelReason = "";
+    if(o.canceledAt === undefined) o.canceledAt = null;
+    if(o.statusBeforeCancel === undefined) o.statusBeforeCancel = null;
+    if(o.subtotal === undefined){
+      // Legacy orders only had a single "cost" figure with no tax concept — treat it as the final total already.
+      o.subtotal = o.cost || 0;
+      o.taxEnabled = false;
+    }
+    if(o.taxEnabled === undefined) o.taxEnabled = true;
+    return o;
+  }
+
   function loadOrders(){
-    try { return JSON.parse(localStorage.getItem(ORDERS_KEY)) || []; }
+    try {
+      var arr = JSON.parse(localStorage.getItem(ORDERS_KEY)) || [];
+      arr.forEach(migrateOrderShape);
+      return arr;
+    }
     catch(e){ return []; }
   }
   function saveOrders(){
     try { localStorage.setItem(ORDERS_KEY, JSON.stringify(state.orders)); }
     catch(e){ storageOK = false; toast("Couldn't save — see Backup notes"); }
+    if(state.backup && state.backup.status === "connected"){
+      writeBackupNow().catch(function(){});
+    }
+  }
+
+  function loadCustomers(){
+    try { return JSON.parse(localStorage.getItem(CUSTOMERS_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function saveCustomers(){
+    try { localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(state.customers)); }
+    catch(e){ toast("Couldn't save customer — see Backup notes"); }
     if(state.backup && state.backup.status === "connected"){
       writeBackupNow().catch(function(){});
     }
@@ -580,9 +696,11 @@
     selectedId: null,
     editingId: null,
     search: "",
-    filterStatus: "all",
     filterType: "all",
     orders: loadOrders(),
+    customers: loadCustomers(),
+    custSearch: "",
+    custFormId: null,   // null = list only, "new" = add form, or a customer id = edit form
     settings: loadSettings(),
     backup: {
       supported: typeof window.showDirectoryPicker === "function",
@@ -616,12 +734,82 @@
   function statusMeta(s){
     return ({
       "New":{cls:"new"}, "In Progress":{cls:"progress"},
-      "Ready for Pickup":{cls:"ready"}, "Picked Up":{cls:"picked"}
+      "Ready for Pickup":{cls:"ready"}, "Picked Up":{cls:"picked"}, "Canceled":{cls:"canceled"}
     })[s] || {cls:"new"};
   }
   var STATUSES = ["New","In Progress","Ready for Pickup","Picked Up"];
+  var STATUS_GROUPS = STATUSES.concat(["Canceled"]); // used for bucket cards & grouped list — Canceled is reached only via the dedicated Cancel button, not the status pills
 
   function balance(o){ return (Number(o.cost)||0) - (Number(o.deposit)||0); }
+
+  // Returns the rugs on an order that actually have something entered, as {n, description, dimensions}.
+  function activeRugs(o){
+    var out = [];
+    (o.rugs||[]).forEach(function(r,i){
+      var marks = r.marks || [];
+      if((r.description && r.description.trim()) || (r.dimensions && r.dimensions.trim()) || marks.length){
+        out.push({ n:i+1, description:r.description||"", dimensions:r.dimensions||"", marks:marks });
+      }
+    });
+    return out;
+  }
+
+  /* ---------------- Customer database ---------------- */
+  function normPhone(p){ return String(p||"").replace(/\D/g,""); }
+  function getCustomer(id){ return state.customers.filter(function(c){ return c.id===id; })[0] || null; }
+
+  // Find an existing customer matching by phone (preferred) or exact name+email.
+  function findCustomerMatch(cust){
+    var ph = normPhone(cust.phone);
+    var nm = String(cust.name||"").trim().toLowerCase();
+    var match = null;
+    state.customers.forEach(function(c){
+      if(match) return;
+      if(ph && normPhone(c.phone) === ph) { match = c; return; }
+      if(!ph && nm && String(c.name||"").trim().toLowerCase() === nm) { match = c; }
+    });
+    return match;
+  }
+
+  // Create or update a customer record from an order's customer info, and stamp the
+  // customer's "last work order" date. Returns the customer id.
+  function upsertCustomerFromOrder(o){
+    var cust = o.customer;
+    if(!cust || !cust.name){ return o.customerId || null; }
+    var existing = (o.customerId && getCustomer(o.customerId)) || findCustomerMatch(cust);
+    var lastDate = o.dropoffDate || todayISO();
+    if(existing){
+      existing.name = cust.name;
+      existing.phone = cust.phone;
+      existing.email = cust.email;
+      existing.address = cust.address;
+      if(!existing.lastOrderDate || lastDate > existing.lastOrderDate) existing.lastOrderDate = lastDate;
+      existing.updatedAt = new Date().toISOString();
+      saveCustomers();
+      return existing.id;
+    } else {
+      var c = {
+        id: "cu_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+        name: cust.name, phone: cust.phone, email: cust.email, address: cust.address,
+        lastOrderDate: lastDate, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      };
+      state.customers.push(c);
+      saveCustomers();
+      return c.id;
+    }
+  }
+
+  function customerMatches(q){
+    q = String(q||"").trim().toLowerCase();
+    if(!q) return [];
+    var qDigits = normPhone(q);
+    return state.customers.filter(function(c){
+      if(String(c.name||"").toLowerCase().indexOf(q) !== -1) return true;
+      if(String(c.email||"").toLowerCase().indexOf(q) !== -1) return true;
+      if(qDigits && normPhone(c.phone).indexOf(qDigits) !== -1) return true;
+      return false;
+    }).sort(function(a,b){ return String(a.name||"").localeCompare(String(b.name||"")); }).slice(0,8);
+  }
 
   /* ---------------- Activity & alerts ---------------- */
   var STALLED_DAYS = 14;       // no update in this many days
@@ -657,18 +845,18 @@
   }
 
   function isStalled(o){
-    if(o.status === "Picked Up") return false;
+    if(o.status === "Picked Up" || o.status === "Canceled") return false;
     var d = daysSince(lastActivity(o));
     return d !== null && d >= STALLED_DAYS;
   }
   function isOverdue(o){
-    if(o.status === "Picked Up" || o.status === "Ready for Pickup") return false;
+    if(o.status === "Picked Up" || o.status === "Ready for Pickup" || o.status === "Canceled") return false;
     if(!o.readyDate) return false;
     var b = businessDaysUntil(o.readyDate);
     return b !== null && b < 0;
   }
   function isDueSoon(o){
-    if(o.status === "Picked Up" || o.status === "Ready for Pickup") return false;
+    if(o.status === "Picked Up" || o.status === "Ready for Pickup" || o.status === "Canceled") return false;
     if(!o.readyDate) return false;
     var b = businessDaysUntil(o.readyDate);
     return b !== null && b >= 0 && b <= PROMISE_BUSINESS_DAYS;
@@ -729,6 +917,7 @@
     else if(state.view==="new"||state.view==="edit") renderForm();
     else if(state.view==="detail") renderDetail();
     else if(state.view==="alerts") renderAlerts();
+    else if(state.view==="customers") renderCustomers();
     else if(state.view==="settings") renderSettings();
     window.scrollTo(0,0);
   }
@@ -741,7 +930,8 @@
     return state.orders.filter(function(o){
       if(state.filterType!=="all" && o.type!==state.filterType) return false;
       if(!q) return true;
-      return (o.number+" "+o.customer.name+" "+o.customer.phone+" "+o.customer.email+" "+(o.item.description||""))
+      var rugText = (o.rugs||[]).map(function(r){ return r.description||""; }).join(" ");
+      return (o.number+" "+o.customer.name+" "+o.customer.phone+" "+o.customer.email+" "+rugText)
         .toLowerCase().indexOf(q) !== -1;
     }).sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
   }
@@ -749,7 +939,7 @@
   function bucketMeta(s){
     return ({
       "New":"b-new", "In Progress":"b-progress",
-      "Ready for Pickup":"b-ready", "Picked Up":"b-picked"
+      "Ready for Pickup":"b-ready", "Picked Up":"b-picked", "Canceled":"b-canceled"
     })[s] || "b-new";
   }
 
@@ -770,28 +960,30 @@
   }
 
   function bucketCardsHtml(base){
-    var counts = { "New":0, "In Progress":0, "Ready for Pickup":0, "Picked Up":0 };
-    var alerts = { "New":0, "In Progress":0, "Ready for Pickup":0, "Picked Up":0 };
+    var counts = { "New":0, "In Progress":0, "Ready for Pickup":0, "Picked Up":0, "Canceled":0 };
+    var alerts = { "New":0, "In Progress":0, "Ready for Pickup":0, "Picked Up":0, "Canceled":0 };
     base.forEach(function(o){
       if(counts[o.status] === undefined) counts[o.status] = 0;
       counts[o.status]++;
       if(isStalled(o) || isOverdue(o) || isDueSoon(o)) alerts[o.status]++;
     });
+    var allBox = '<button class="bucket-all" data-scrollto="all">'
+      + '<div class="b-count">'+base.length+'</div><div class="b-label">All Work Orders</div></button>';
     var cards = '';
-    cards += '<button class="bucket-card b-all'+(state.filterStatus==="all"?" active":"")+'" data-bucket="all">'
-      + '<div class="b-count">'+base.length+'</div><div class="b-label">All open + done</div></button>';
-    STATUSES.forEach(function(s){
+    STATUS_GROUPS.forEach(function(s){
       var a = alerts[s] ? '<span class="b-alert">⚑ '+alerts[s]+'</span>' : '';
-      cards += '<button class="bucket-card '+bucketMeta(s)+(state.filterStatus===s?" active":"")+'" data-bucket="'+esc(s)+'">'
+      cards += '<button class="bucket-card '+bucketMeta(s)+'" data-scrollto="'+esc(s)+'">'
         + '<div class="b-count">'+(counts[s]||0)+'</div>'
         + '<div class="b-label">'+esc(s)+a+'</div></button>';
     });
-    return '<div class="buckets">'+cards+'</div>';
+    return allBox + '<div class="buckets">'+cards+'</div>';
   }
+
+  function groupAnchorId(s){ return "grp-"+s.replace(/[^A-Za-z0-9]+/g,"-"); }
 
   function renderList(){
     var base = baseFiltered();
-    var open = state.orders.filter(function(o){ return o.status!=="Picked Up"; }).length;
+    var open = state.orders.filter(function(o){ return o.status!=="Picked Up" && o.status!=="Canceled"; }).length;
     var html = ''
       + '<div class="page-head">'
       +   '<div><h2>Work orders</h2><div class="sub">'+state.orders.length+' total · '+open+' open</div></div>'
@@ -807,34 +999,29 @@
       html += emptyState("No work orders yet","Create your first one to start tracking cleaning, repairs, and pads.");
     } else {
       var listHead = '<div class="list-head"><div>Order</div><div>Customer</div><div class="c-type">Type</div><div>Status</div><div class="r c-cost">Total</div></div>';
-      if(state.filterStatus === "all"){
-        // Grouped by bucket
-        var any = false;
-        STATUSES.forEach(function(s){
-          var rows = base.filter(function(o){ return o.status===s; });
-          if(!rows.length) return;
-          any = true;
-          html += '<div class="group-head"><span class="badge '+statusMeta(s).cls+'">'+esc(s)+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
-          html += listHead;
-          rows.forEach(function(o){ html += orderRowHtml(o); });
-        });
-        if(!any) html += emptyState("No matches","Try a different search or clear the type filter.");
-      } else {
-        var list = base.filter(function(o){ return o.status===state.filterStatus; });
-        if(list.length===0){
-          html += emptyState("Nothing in “"+state.filterStatus+"”","No work orders are in this bucket right now.");
-        } else {
-          html += listHead;
-          list.forEach(function(o){ html += orderRowHtml(o); });
-        }
-      }
+      // Always show every status, grouped — the type filter above narrows what's inside each group.
+      var any = false;
+      STATUS_GROUPS.forEach(function(s){
+        var rows = base.filter(function(o){ return o.status===s; });
+        if(!rows.length) return;
+        any = true;
+        html += '<div class="group-head" id="'+groupAnchorId(s)+'"><span class="badge '+statusMeta(s).cls+'">'+esc(s)+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
+        html += listHead;
+        rows.forEach(function(o){ html += orderRowHtml(o); });
+      });
+      if(!any) html += emptyState("No matches","Try a different search or type filter.");
     }
     main.innerHTML = html;
 
     document.getElementById("search").addEventListener("input", function(e){ state.search=e.target.value; refreshListOnly(); });
     document.getElementById("fType").addEventListener("change", function(e){ state.filterType=e.target.value; refreshListOnly(); });
-    main.querySelectorAll("[data-bucket]").forEach(function(el){
-      el.addEventListener("click", function(){ state.filterStatus = el.dataset.bucket; renderList(); });
+    main.querySelectorAll("[data-scrollto]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var key = el.dataset.scrollto;
+        var target = key==="all" ? main.querySelector(".page-head") : document.getElementById(groupAnchorId(key));
+        if(target) target.scrollIntoView({ behavior:"smooth", block:"start" });
+        else toast("No work orders in “"+key+"” right now");
+      });
     });
     main.querySelectorAll("[data-open]").forEach(function(el){
       el.addEventListener("click", function(){ go("detail", el.dataset.open); });
@@ -916,6 +1103,120 @@
     });
   }
 
+  /* ---------------- Customers ---------------- */
+  function renderCustomers(){
+    var q = state.custSearch.trim().toLowerCase();
+    var list = state.customers.filter(function(c){
+      if(!q) return true;
+      return (String(c.name||"")+" "+String(c.phone||"")+" "+String(c.email||"")+" "+String(c.address||""))
+        .toLowerCase().indexOf(q) !== -1;
+    }).sort(function(a,b){ return String(a.name||"").localeCompare(String(b.name||"")); });
+
+    var html = ''
+      + '<div class="page-head"><div><h2>Customers</h2>'
+      +   '<div class="sub">'+state.customers.length+' saved customer'+(state.customers.length===1?"":"s")+'</div></div>'
+      +   '<button class="btn primary" id="addCust">＋ Add customer</button></div>';
+
+    if(state.custFormId !== null) html += customerFormHtml(state.custFormId);
+
+    html += '<div class="toolbar"><div class="search"><span>🔍</span>'
+      + '<input id="custSearch" placeholder="Search name, phone, email, or address…" value="'+esc(state.custSearch)+'"></div></div>';
+
+    if(!list.length){
+      html += emptyState(
+        state.customers.length ? "No matches" : "No customers yet",
+        state.customers.length ? "Try a different search." : "Customers are saved automatically whenever you create a work order for them, or you can add one here."
+      );
+    } else {
+      html += '<div class="cust-list-head"><div>Name</div><div>Phone</div><div>Email</div><div>Address</div><div>Last work order</div></div>';
+      list.forEach(function(c){
+        html += ''
+          + '<div class="cust-row" data-cust="'+esc(c.id)+'">'
+          +   '<div class="name">'+esc(c.name)+'</div>'
+          +   '<div class="muted">'+esc(c.phone||"—")+'</div>'
+          +   '<div class="muted">'+esc(c.email||"—")+'</div>'
+          +   '<div class="muted">'+esc(c.address||"—")+'</div>'
+          +   '<div class="muted">'+(c.lastOrderDate?fmtDate(c.lastOrderDate):"—")+'</div>'
+          + '</div>';
+      });
+    }
+
+    main.innerHTML = html;
+    main.querySelector("#addCust").addEventListener("click", function(){ state.custFormId="new"; renderCustomers(); });
+    main.querySelector("#custSearch").addEventListener("input", function(e){ state.custSearch = e.target.value; refreshCustomersOnly(); });
+    main.querySelectorAll("[data-cust]").forEach(function(el){
+      el.addEventListener("click", function(){ state.custFormId = el.dataset.cust; renderCustomers(); });
+    });
+    wireCustomerForm();
+  }
+  function refreshCustomersOnly(){
+    // re-render just the rows without losing input focus/caret in the search box
+    var focusEl = document.activeElement;
+    var caret = focusEl && focusEl.id==="custSearch" ? focusEl.selectionStart : null;
+    renderCustomers();
+    if(caret!==null){ var s=document.getElementById("custSearch"); if(s){ s.focus(); s.setSelectionRange(caret,caret); } }
+  }
+  function customerFormHtml(id){
+    var editing = id !== "new";
+    var c = editing ? getCustomer(id) : {name:"",phone:"",email:"",address:""};
+    if(editing && !c) return "";
+    return ''
+      + '<div class="settings-block">'
+      +   '<h3>'+(editing?"Edit customer":"Add a customer")+'</h3>'
+      +   '<div class="grid">'
+      +     field("Name","cf_name",c.name,{req:true})
+      +     field("Phone","cf_phone",c.phone,{req:true,type:"tel"})
+      +     field("Email","cf_email",c.email,{type:"email"})
+      +     field("Address","cf_address",c.address,{})
+      +   '</div>'
+      +   '<div style="margin-top:16px;display:flex;gap:10px;align-items:center">'
+      +     '<button class="btn primary" id="custSave">Save</button>'
+      +     '<button class="btn ghost" id="custCancel">Cancel</button>'
+      +     (editing?'<button class="btn danger" id="custDelete" style="margin-left:auto">Delete customer</button>':'')
+      +   '</div>'
+      +   '<div class="form-msg" id="custFormMsg" style="margin-top:8px"></div>'
+      + '</div>';
+  }
+  function wireCustomerForm(){
+    var saveBtn = main.querySelector("#custSave");
+    if(!saveBtn) return;
+    saveBtn.addEventListener("click", function(){
+      var g = function(id){ var el=main.querySelector("#"+id); return el?el.value.trim():""; };
+      var name=g("cf_name"), phone=g("cf_phone");
+      var msg = main.querySelector("#custFormMsg");
+      if(!name || !phone){ msg.textContent = "Name and phone are required."; return; }
+      if(state.custFormId === "new"){
+        state.customers.push({
+          id: "cu_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+          name:name, phone:phone, email:g("cf_email"), address:g("cf_address"),
+          lastOrderDate:null, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+        });
+      } else {
+        var existing = getCustomer(state.custFormId);
+        if(existing){
+          existing.name=name; existing.phone=phone; existing.email=g("cf_email"); existing.address=g("cf_address");
+          existing.updatedAt = new Date().toISOString();
+        }
+      }
+      saveCustomers();
+      state.custFormId = null;
+      toast("Customer saved");
+      renderCustomers();
+    });
+    main.querySelector("#custCancel").addEventListener("click", function(){ state.custFormId = null; renderCustomers(); });
+    var delBtn = main.querySelector("#custDelete");
+    if(delBtn) delBtn.addEventListener("click", function(){
+      var c = getCustomer(state.custFormId);
+      if(!c) return;
+      if(!confirm("Delete customer "+c.name+"? This does not delete their past work orders.")) return;
+      state.customers = state.customers.filter(function(x){ return x.id!==c.id; });
+      saveCustomers();
+      state.custFormId = null;
+      toast("Customer deleted");
+      renderCustomers();
+    });
+  }
+
   /* ---------------- Form ---------------- */
   function renderForm(){
     var editing = state.view==="edit";
@@ -938,6 +1239,11 @@
     + '</fieldset>'
 
     + '<fieldset class="fieldset"><legend>Customer</legend>'
+    +   '<div class="cust-picker">'
+    +     '<label for="cust_pick">Returning customer? Search by name or phone</label>'
+    +     '<input type="text" id="cust_pick" placeholder="Start typing a name or phone number…" autocomplete="off">'
+    +     '<div class="ac-list" id="custAcList"></div>'
+    +   '</div>'
     +   '<div class="grid">'
     +     field("Name","cust_name",o.customer.name,{req:true})
     +     field("Phone","cust_phone",o.customer.phone,{req:true,type:"tel"})
@@ -946,13 +1252,16 @@
     +   '</div>'
     + '</fieldset>'
 
-    + '<fieldset class="fieldset"><legend>The rug &amp; work</legend>'
-    +   '<div class="grid">'
-    +     '<div class="field full"><label for="item_desc">Description of item &amp; work needed</label>'
-    +       '<textarea id="item_desc" placeholder="e.g. 9x12 Persian Tabriz, wine stain in center; re-wrap two edges">'+esc(o.item.description)+'</textarea></div>'
-    +     field("Rug size / dimensions","item_dim",o.item.dimensions,{hint:"Optional — e.g. 9×12"})
-    +     field("Add-ons / additional services","item_addons",o.item.addons,{hint:"e.g. pet odor treatment, fringe detail, rush service"})
+    + '<fieldset class="fieldset"><legend>Rugs &amp; work (up to 4)</legend>'
+    +   '<div class="rug-row">'
+    +     rugBlock(1, o.rugs[0])
+    +     rugBlock(2, o.rugs[1])
+    +     rugBlock(3, o.rugs[2])
+    +     rugBlock(4, o.rugs[3])
     +   '</div>'
+    +   '<div class="field full" style="margin-top:16px">'
+    +     '<label for="addons">Add-ons / additional services</label>'
+    +     '<input type="text" id="addons" value="'+esc(o.addons)+'" placeholder="e.g. pet odor treatment, fringe detail, rush service"></div>'
     + '</fieldset>'
 
     + '<fieldset class="fieldset"><legend>Schedule</legend>'
@@ -964,9 +1273,19 @@
 
     + '<fieldset class="fieldset"><legend>Cost</legend>'
     +   '<div class="grid thirds">'
-    +     moneyField("Total","cost",o.cost,{req:true})
+    +     moneyField("Subtotal","subtotal",o.subtotal,{req:true})
+    +     '<div class="field">'
+    +       '<label style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+    +         '<span>Sales tax (7.5% NC/Durham)</span>'
+    +         '<span class="tax-toggle"><input type="checkbox" id="taxToggle"'+(o.taxEnabled!==false?' checked':'')+'><span class="tax-slider"></span></span>'
+    +       '</label>'
+    +       '<div class="money-wrap"><input id="taxView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div>'
+    +     '</div>'
+    +     '<div class="field"><label>Total</label><div class="money-wrap"><input id="totalView" value="0.00" readonly tabindex="-1" style="background:#f2efe7;font-weight:700"></div></div>'
+    +   '</div>'
+    +   '<div class="grid thirds" style="margin-top:14px">'
     +     moneyField("Deposit paid","deposit",o.deposit,{})
-    +     '<div class="field"><label>Balance due</label><div class="money-wrap"><input id="balanceView" value="'+(balance(o)?balance(o).toFixed(2):"0.00")+'" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     '<div class="field"><label>Balance due</label><div class="money-wrap"><input id="balanceView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +   '</div>'
     + '</fieldset>'
 
@@ -990,15 +1309,103 @@
       });
     });
     function recalcBalance(){
-      var c = parseFloat(main.querySelector("#cost").value)||0;
+      var sub = parseFloat(main.querySelector("#subtotal").value)||0;
+      var taxOn = main.querySelector("#taxToggle").checked;
+      var tax = taxOn ? sub*TAX_RATE : 0;
+      var total = sub + tax;
       var d = parseFloat(main.querySelector("#deposit").value)||0;
-      main.querySelector("#balanceView").value = (c-d).toFixed(2);
+      main.querySelector("#taxView").value = tax.toFixed(2);
+      main.querySelector("#totalView").value = total.toFixed(2);
+      main.querySelector("#balanceView").value = (total-d).toFixed(2);
     }
-    main.querySelector("#cost").addEventListener("input", recalcBalance);
+    main.querySelector("#subtotal").addEventListener("input", recalcBalance);
+    main.querySelector("#taxToggle").addEventListener("change", recalcBalance);
     main.querySelector("#deposit").addEventListener("input", recalcBalance);
+    recalcBalance();
     main.querySelector("#cancelForm").addEventListener("click", function(){ go(editing?"detail":"list"); });
     main.querySelector("#cancelForm2").addEventListener("click", function(){ go(editing?"detail":"list"); });
     main.querySelector("#woForm").addEventListener("submit", function(e){ e.preventDefault(); submitForm(editing, o); });
+    // Enter should only add a line inside textareas — never submit the form from any field.
+    // The submit button itself is type="submit", so a click (or Enter while it's focused) still works.
+    main.querySelector("#woForm").addEventListener("keydown", function(e){
+      if(e.key !== "Enter") return;
+      var tag = e.target.tagName;
+      if(tag === "TEXTAREA") return; // let newline through
+      if(e.target.type === "submit") return; // let the button itself still respond to Enter/click
+      e.preventDefault();
+    });
+
+    // Returning-customer search/autocomplete
+    (function(){
+      var pickInput = main.querySelector("#cust_pick");
+      var acList = main.querySelector("#custAcList");
+      var acHi = -1;
+      function renderAc(matches){
+        acHi = -1;
+        if(!matches.length){ acList.innerHTML = ""; acList.classList.remove("show"); return; }
+        acList.innerHTML = matches.map(function(c){
+          return '<div class="ac-item" data-id="'+esc(c.id)+'">'
+            + '<div class="n">'+esc(c.name)+'</div>'
+            + '<div class="m">'+esc(c.phone||"")+(c.email?" · "+esc(c.email):"")+'</div>'
+            + '</div>';
+        }).join("");
+        acList.classList.add("show");
+      }
+      function pickCustomer(id){
+        var c = getCustomer(id);
+        if(!c) return;
+        main.querySelector("#cust_name").value = c.name||"";
+        main.querySelector("#cust_phone").value = c.phone||"";
+        main.querySelector("#cust_email").value = c.email||"";
+        main.querySelector("#cust_address").value = c.address||"";
+        pickInput.value = c.name||"";
+        acList.classList.remove("show");
+        toast("Loaded "+c.name+"’s info");
+      }
+      pickInput.addEventListener("input", function(){ renderAc(customerMatches(pickInput.value)); });
+      pickInput.addEventListener("focus", function(){ if(pickInput.value.trim()) renderAc(customerMatches(pickInput.value)); });
+      pickInput.addEventListener("blur", function(){ setTimeout(function(){ acList.classList.remove("show"); }, 150); });
+      pickInput.addEventListener("keydown", function(e){
+        var items = acList.querySelectorAll(".ac-item");
+        if(!items.length) return;
+        if(e.key==="ArrowDown"){ e.preventDefault(); acHi=Math.min(acHi+1, items.length-1); items.forEach(function(it,i){ it.classList.toggle("hi", i===acHi); }); }
+        else if(e.key==="ArrowUp"){ e.preventDefault(); acHi=Math.max(acHi-1, 0); items.forEach(function(it,i){ it.classList.toggle("hi", i===acHi); }); }
+        else if(e.key==="Enter"){ if(acHi>=0){ e.preventDefault(); pickCustomer(items[acHi].dataset.id); } }
+        else if(e.key==="Escape"){ acList.classList.remove("show"); }
+      });
+      acList.addEventListener("mousedown", function(e){
+        var item = e.target.closest(".ac-item");
+        if(item) pickCustomer(item.dataset.id);
+      });
+    })();
+
+    // Rug diagrams — click to add/remove issue marks; marks live directly on o.rugs[n-1].marks
+    // so they're already up to date on o by the time submitForm() reads it.
+    [1,2,3,4].forEach(function(n){
+      var container = main.querySelector('.rug-diagram-canvas[data-rugidx="'+n+'"]');
+      if(!container) return;
+      if(!o.rugs[n-1].marks) o.rugs[n-1].marks = [];
+      function redraw(){
+        container.innerHTML = rugDiagramSVG(o.rugs[n-1].marks);
+        wireClicks();
+      }
+      function wireClicks(){
+        var svg = container.querySelector("svg");
+        svg.addEventListener("click", function(e){
+          var pt = svgPoint(svg, e);
+          if(!pt) return;
+          var marks = o.rugs[n-1].marks;
+          var hitIdx = -1;
+          marks.forEach(function(m, i){ if(hitIdx===-1 && Math.hypot(m.x-pt.x, m.y-pt.y) < 10) hitIdx = i; });
+          if(hitIdx >= 0) marks.splice(hitIdx, 1);
+          else marks.push(pt);
+          redraw();
+        });
+      }
+      wireClicks();
+      var clearBtn = main.querySelector('.rug-clear-btn[data-rugidx="'+n+'"]');
+      if(clearBtn) clearBtn.addEventListener("click", function(){ o.rugs[n-1].marks = []; redraw(); });
+    });
   }
 
   function typeChoice(val, ico, label, current){
@@ -1006,6 +1413,55 @@
     return '<label class="'+(checked?"checked":"")+'"><span class="t-ico">'+ico+'</span>'
       + '<input type="radio" name="wtype" value="'+val+'"'+(checked?" checked":"")+'>'
       + '<span>'+label+'</span></label>';
+  }
+  function rugBlock(n, r){
+    r = r || {description:"",dimensions:"",marks:[]};
+    return '<div class="rug-col"><h4>Rug #'+n+(n===1?'':' <span style="font-weight:400;color:var(--ink-soft);font-size:11.5px">(optional)</span>')+'</h4>'
+      + '<div class="field"><label for="rug'+n+'_desc">Description &amp; work needed</label>'
+      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. 9x12 Persian Tabriz, wine stain in center">'+esc(r.description)+'</textarea></div>'
+      + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 9×12"})
+      + '<div class="rug-diagram-wrap">'
+      +   '<div class="rdg-label">Click the rug to mark an issue spot. Click a mark to remove it.</div>'
+      +   '<div class="rug-diagram-canvas" data-rugidx="'+n+'">'+rugDiagramSVG(r.marks||[])+'</div>'
+      +   '<button type="button" class="btn ghost rug-clear-btn" data-rugidx="'+n+'">Clear marks</button>'
+      + '</div>'
+      + '</div>';
+  }
+  // Generic rug outline with fringe drawn on both short ends, plus any saved issue marks.
+  // Coordinate system is a fixed 0 0 300 180 viewBox shared by the editor, detail view, and print copy,
+  // so marks always land in the same spot no matter how large the SVG is rendered.
+  function rugDiagramSVG(marks){
+    marks = marks || [];
+    function fringe(xBase, dir){
+      var out = '';
+      for(var y=16; y<=164; y+=7){
+        out += '<line x1="'+xBase+'" y1="'+y+'" x2="'+(xBase+dir*13)+'" y2="'+y+'" stroke="#b9ab8f" stroke-width="1.3"/>';
+      }
+      return out;
+    }
+    var marksHtml = marks.map(function(m){
+      return '<g transform="translate('+m.x+','+m.y+')">'
+        + '<circle r="8" fill="#c0392b" fill-opacity="0.18" stroke="#7e2b34" stroke-width="1.5"/>'
+        + '<line x1="-5" y1="-5" x2="5" y2="5" stroke="#7e2b34" stroke-width="2"/>'
+        + '<line x1="-5" y1="5" x2="5" y2="-5" stroke="#7e2b34" stroke-width="2"/>'
+        + '</g>';
+    }).join("");
+    return ''
+      + '<svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">'
+      +   fringe(24, -1) + fringe(276, 1)
+      +   '<rect x="24" y="10" width="252" height="160" fill="#f7f2e7" stroke="#7e2b34" stroke-width="2.5"/>'
+      +   '<rect x="36" y="20" width="228" height="140" fill="none" stroke="#c2a06a" stroke-width="1" stroke-dasharray="4 3"/>'
+      +   marksHtml
+      + '</svg>';
+  }
+  // Converts a click event on an <svg> into coordinates in that svg's own viewBox space.
+  function svgPoint(svg, evt){
+    var pt = svg.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    var ctm = svg.getScreenCTM();
+    if(!ctm) return null;
+    var loc = pt.matrixTransform(ctm.inverse());
+    return { x: Math.round(loc.x), y: Math.round(loc.y) };
   }
   function field(label, id, val, opts){
     opts=opts||{};
@@ -1025,10 +1481,10 @@
     var errs = [];
     function mark(id, bad){ var el=main.querySelector("#"+id); if(el) el.classList.toggle("err", !!bad); }
 
-    var name=g("cust_name"), phone=g("cust_phone"), cost=g("cost");
+    var name=g("cust_name"), phone=g("cust_phone"), subtotal=g("subtotal");
     mark("cust_name", !name); if(!name) errs.push("name");
     mark("cust_phone", !phone); if(!phone) errs.push("phone");
-    mark("cost", cost===""); if(cost==="") errs.push("cost");
+    mark("subtotal", subtotal===""); if(subtotal==="") errs.push("subtotal");
     var typeOk = !!typeEl;
 
     if(errs.length || !typeOk){
@@ -1040,12 +1496,21 @@
     var o = editing ? getOrder(state.selectedId) : base;
     o.type = typeEl.value;
     o.customer = { name:name, phone:phone, email:g("cust_email"), address:g("cust_address") };
-    o.item = { description:g("item_desc"), dimensions:g("item_dim"), addons:g("item_addons") };
+    var oldRugs = o.rugs || [];
+    o.rugs = [1,2,3,4].map(function(n){
+      return { description:g("rug"+n+"_desc"), dimensions:g("rug"+n+"_dim"), marks:(oldRugs[n-1] && oldRugs[n-1].marks) || [] };
+    });
+    o.addons = g("addons");
     o.dropoffDate = g("dropoff");
     o.readyDate = g("ready");
-    o.cost = parseFloat(g("cost"))||0;
+    var subtotalNum = parseFloat(g("subtotal"))||0;
+    var taxOn = !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked);
+    o.subtotal = subtotalNum;
+    o.taxEnabled = taxOn;
+    o.cost = +((subtotalNum * (taxOn ? (1+TAX_RATE) : 1)).toFixed(2));
     o.deposit = parseFloat(g("deposit"))||0;
     o.notes = g("notes");
+    o.customerId = upsertCustomerFromOrder(o);
 
     if(!editing){
       o.id = "wo_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);
@@ -1069,9 +1534,17 @@
 
   function blankOrder(){
     return { id:null, number:"", createdAt:null, status:"New", type:"cleaning",
+      customerId:null,
       customer:{name:"",phone:"",email:"",address:""},
-      item:{description:"",dimensions:"",addons:""},
-      dropoffDate:todayISO(), readyDate:"", cost:"", deposit:"", notes:"" };
+      rugs:[
+        {description:"",dimensions:"",marks:[]},
+        {description:"",dimensions:"",marks:[]},
+        {description:"",dimensions:"",marks:[]},
+        {description:"",dimensions:"",marks:[]}
+      ],
+      addons:"",
+      cancelReason:"", canceledAt:null, statusBeforeCancel:null,
+      dropoffDate:todayISO(), readyDate:"", subtotal:"", taxEnabled:true, cost:"", deposit:"", notes:"" };
   }
   function getOrder(id){ return state.orders.filter(function(o){return o.id===id;})[0] || null; }
 
@@ -1080,6 +1553,7 @@
     var o = getOrder(state.selectedId);
     if(!o){ go("list"); return; }
     var sm = statusMeta(o.status);
+    var rugsForDetail = activeRugs(o);
     populatePrint(o);
 
     main.innerHTML = ''
@@ -1088,11 +1562,20 @@
     +   '<button class="btn back" id="backList">← Back to Orders</button></div>'
 
     + '<div class="detail-actions">'
-    +   '<button class="btn madder" id="btnPrint">🖨 Print copy</button>'
+    +   '<button class="btn sage" id="btnPrint">🖨 Print copy</button>'
     +   '<button class="btn primary" id="btnEmail">✉ Email work order</button>'
     +   '<button class="btn" id="btnEdit">✎ Edit</button>'
+    +   (o.status==="Canceled"
+          ? '<button class="btn" id="btnReopen">↺ Reopen work order</button>'
+          : '<button class="btn madder" id="btnCancel">⛔ Cancel work order</button>')
     +   '<button class="btn danger" id="btnDelete">Delete</button>'
     + '</div>'
+
+    + (o.status==="Canceled"
+        ? '<div class="cancel-banner">⛔ <strong>This work order was canceled</strong>'
+          + (o.canceledAt?' on '+esc(fmtDate((o.canceledAt||"").slice(0,10))):'')
+          + '<br>Reason: '+esc(o.cancelReason||"—")+'</div>'
+        : '')
 
     + '<div class="detail-grid">'
     +   '<div class="doc">'
@@ -1111,22 +1594,38 @@
     +           kvLine("Dropped off", fmtDate(o.dropoffDate))
     +           kvLine("Expected ready", fmtDate(o.readyDate))
     +           kvLine("Type", typeLabel(o.type))
-    +           (o.item.dimensions?kvLine("Rug size", o.item.dimensions):"")
-    +           (o.item.addons?kvLine("Add-ons", o.item.addons):"")
+    +           (o.addons?kvLine("Add-ons", o.addons):"")
     +         '</div>'
     +       '</div>'
-    +       '<div class="kv" style="margin-bottom:18px"><h4>Description &amp; work</h4>'
-    +         '<div class="doc-notes'+(o.item.description?'':' empty-note')+'">'+(o.item.description?esc(o.item.description):"No description entered.")+'</div>'
+    +       '<div class="kv" style="margin-bottom:18px"><h4>Rugs &amp; work</h4>'
+    +         (rugsForDetail.length
+                ? rugsForDetail.map(function(rr){
+                    var text = '<div style="font-weight:700;margin-bottom:4px">Rug '+rr.n+(rr.dimensions?' — '+esc(rr.dimensions):'')+'</div>'
+                      + (rr.description?esc(rr.description):'<span style="color:var(--ink-soft);font-style:italic">No description entered.</span>');
+                    var diagram = rr.marks && rr.marks.length
+                      ? '<div class="rug-diagram-canvas readonly print-rug-diagram">'+rugDiagramSVG(rr.marks)+'</div>'
+                      : '';
+                    return '<div class="doc-notes" style="margin-bottom:10px">'
+                      + (diagram ? '<div class="print-rug-flex"><div class="prf-text">'+text+'</div>'+diagram+'</div>' : text)
+                      + '</div>';
+                  }).join("")
+                : '<div class="doc-notes empty-note">No rug details entered.</div>')
     +       '</div>'
     +       (o.notes?'<div class="kv"><h4>Internal notes</h4><div class="doc-notes">'+esc(o.notes)+'</div></div>':'')
     +     '</div>'
     +   '</div>'
 
     +   '<div class="side-panel">'
-    +     '<div class="panel"><h4>Status</h4><div class="status-row" id="statusRow">'
-    +        STATUSES.map(function(s){ return '<button class="status-opt'+(o.status===s?" active":"")+'" data-status="'+s+'">'+s+'</button>'; }).join("")
-    +     '</div></div>'
+    +     '<div class="panel"><h4>Status</h4>'
+    +       (o.status==="Canceled"
+              ? '<div class="doc-notes" style="margin:0">This order is canceled. Use “Reopen work order” above to restore it to '+esc(o.statusBeforeCancel||"New")+'.</div>'
+              : '<div class="status-row" id="statusRow">'
+                + STATUSES.map(function(s){ return '<button class="status-opt'+(o.status===s?" active":"")+'" data-status="'+s+'">'+s+'</button>'; }).join("")
+                + '</div>')
+    +     '</div>'
     +     '<div class="panel money-summary"><h4>Payment</h4>'
+    +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
+    +       '<div class="line"><span>Sales tax'+(o.taxEnabled?' (7.5%)':' (not applied)')+'</span><span class="mono">'+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+'</span></div>'
     +       '<div class="line"><span>Total</span><span class="mono">'+money(o.cost)+'</span></div>'
     +       '<div class="line"><span>Deposit paid</span><span class="mono">'+money(o.deposit)+'</span></div>'
     +       '<div class="line total"><span>Balance due</span><span class="mono">'+money(balance(o))+'</span></div>'
@@ -1145,6 +1644,10 @@
     main.querySelector("#btnEmail").addEventListener("click", function(){ emailWorkOrder(o); });
     main.querySelector("#btnDelete").addEventListener("click", function(){ deleteOrder(o); });
     main.querySelector("#btnReady").addEventListener("click", function(){ markReady(o); });
+    var cancelBtn = main.querySelector("#btnCancel");
+    if(cancelBtn) cancelBtn.addEventListener("click", function(){ cancelOrder(o); });
+    var reopenBtn = main.querySelector("#btnReopen");
+    if(reopenBtn) reopenBtn.addEventListener("click", function(){ reopenOrder(o); });
     main.querySelectorAll(".status-opt").forEach(function(b){
       b.addEventListener("click", function(){ setStatus(o, b.dataset.status); });
     });
@@ -1154,211 +1657,92 @@
   function setStatus(o, s){
     o.status = s; touch(o); saveOrders(); toast("Status: "+s); renderDetail();
   }
+  function cancelOrder(o){
+    var reason = window.prompt("Please enter a reason for canceling work order "+o.number+" ("+o.customer.name+"):", "");
+    if(reason === null) return; // they hit Cancel on the prompt itself — abort, nothing changes
+    reason = reason.trim();
+    if(!reason){ alert("A cancellation reason is required to cancel this work order."); return; }
+    o.statusBeforeCancel = o.status;
+    o.status = "Canceled";
+    o.cancelReason = reason;
+    o.canceledAt = new Date().toISOString();
+    touch(o); saveOrders(); toast("Work order canceled"); renderDetail();
+  }
+  function reopenOrder(o){
+    if(!confirm("Reopen work order "+o.number+"? It will be restored to \u201c"+(o.statusBeforeCancel||"New")+"\u201d.")) return;
+    o.status = o.statusBeforeCancel || "New";
+    o.cancelReason = "";
+    o.canceledAt = null;
+    touch(o); saveOrders(); toast("Work order reopened"); renderDetail();
+  }
   function deleteOrder(o){
     if(!confirm("Delete work order "+o.number+" for "+o.customer.name+"?\nThis can’t be undone (but your last OneDrive backup still has it).")) return;
     state.orders = state.orders.filter(function(x){ return x.id!==o.id; });
     saveOrders(); toast("Deleted "+o.number); go("list");
   }
 
-  /* ---------------- PDF invoice ---------------- */
-  var _jspdfPromise = null;
-  function loadJsPDF(){
-    if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
-    if(_jspdfPromise) return _jspdfPromise;
-    _jspdfPromise = new Promise(function(resolve, reject){
-      var sc = document.createElement("script");
-      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
-      sc.onload = function(){
-        if(window.jspdf && window.jspdf.jsPDF) resolve(window.jspdf.jsPDF);
-        else reject(new Error("jsPDF unavailable"));
-      };
-      sc.onerror = function(){ _jspdfPromise = null; reject(new Error("Couldn’t load PDF library (need internet).")); };
-      document.head.appendChild(sc);
-    });
-    return _jspdfPromise;
-  }
-
-  function invoiceFilename(o){
-    return "Fargo-Hanna-Work-Order-" + (o.number || "order").replace(/[^A-Za-z0-9\-]/g,"") + ".pdf";
-  }
-
-  // Build and trigger download of a PDF invoice for order o. Returns a Promise.
-  function downloadInvoicePdf(o){
-    return loadJsPDF().then(function(JsPDF){
-      var s = state.settings;
-      var doc = new JsPDF({ unit:"pt", format:"letter" });
-      var W = doc.internal.pageSize.getWidth();
-      var M = 54;               // margin
-      var right = W - M;
-      var y = M;
-      var ink = [33,30,26], soft = [91,83,70], madder = [126,43,52];
-
-      // Logo (centered)
-      try {
-        var lw = 150, lh = lw * (623/700);
-        doc.addImage(LOGO_DATA_URL, "PNG", (W-lw)/2, y, lw, lh);
-        y += lh + 6;
-      } catch(e){ y += 10; }
-
-      // Contact line
-      var contact = [s.address, s.phone, s.email, s.hours].filter(Boolean).join("   ·   ");
-      if(contact){
-        doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(80,80,80);
-        doc.text(contact, W/2, y, { align:"center" });
-        y += 14;
-      }
-
-      // Divider
-      doc.setDrawColor(0,0,0); doc.setLineWidth(1.2);
-      doc.line(M, y, right, y); y += 20;
-
-      // Title row
-      doc.setFont("times","bold"); doc.setFontSize(16); doc.setTextColor(ink[0],ink[1],ink[2]);
-      doc.text(typeLabel(o.type)+" Work Order", M, y);
-      doc.setFont("courier","normal"); doc.setFontSize(12);
-      doc.text(String(o.number||""), right, y, { align:"right" });
-      y += 8;
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.5); doc.line(M, y, right, y); y += 20;
-
-      // Two columns: Customer / Service
-      var colY = y, colGap = 22, colW = (right - M - colGap) / 2;
-      var cx1 = M, cx2 = M + colW + colGap;
-
-      function heading(txt, x, yy){
-        doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(soft[0],soft[1],soft[2]);
-        doc.text(txt.toUpperCase(), x, yy);
-        doc.setDrawColor(150,150,150); doc.setLineWidth(0.4); doc.line(x, yy+4, x+colW, yy+4);
-        return yy + 16;
-      }
-      function kv(label, val, x, yy){
-        doc.setFont("helvetica","normal"); doc.setFontSize(10);
-        doc.setTextColor(soft[0],soft[1],soft[2]); doc.text(label, x, yy);
-        doc.setTextColor(ink[0],ink[1],ink[2]);
-        var v = doc.splitTextToSize(String(val==null||val===""?"—":val), colW - 90);
-        doc.text(v, x + colW, yy, { align:"right" });
-        return yy + Math.max(14, v.length*12);
-      }
-
-      var y1 = heading("Customer", cx1, colY);
-      y1 = kv("Name", o.customer.name, cx1, y1);
-      y1 = kv("Phone", o.customer.phone, cx1, y1);
-      y1 = kv("Email", o.customer.email||"—", cx1, y1);
-      y1 = kv("Address", o.customer.address||"—", cx1, y1);
-
-      var y2 = heading("Service", cx2, colY);
-      y2 = kv("Type", typeLabel(o.type), cx2, y2);
-      y2 = kv("Dropped off", fmtDate(o.dropoffDate), cx2, y2);
-      y2 = kv("Expected ready", fmtDate(o.readyDate), cx2, y2);
-      if(o.item.dimensions) y2 = kv("Rug size", o.item.dimensions, cx2, y2);
-      if(o.item.addons) y2 = kv("Add-ons", o.item.addons, cx2, y2);
-
-      y = Math.max(y1, y2) + 10;
-
-      // Description
-      y = heading("Description & work to be done", M, y);
-      doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(ink[0],ink[1],ink[2]);
-      var desc = doc.splitTextToSize(o.item.description || "—", right - M);
-      doc.text(desc, M, y); y += desc.length*13 + 14;
-
-      // Money box
-      var boxX = M, boxW = right - M, rowH = 22;
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.8);
-      function moneyRow(label, val, bold, fill){
-        if(fill){ doc.setFillColor(242,242,242); doc.rect(boxX, y, boxW, rowH, "F"); }
-        doc.setFont("helvetica", bold?"bold":"normal"); doc.setFontSize(bold?12:10);
-        doc.setTextColor(ink[0],ink[1],ink[2]);
-        doc.text(label, boxX+12, y+15);
-        doc.text(val, boxX+boxW-12, y+15, { align:"right" });
-        doc.setDrawColor(200,200,200); doc.setLineWidth(0.5);
-        doc.line(boxX, y+rowH, boxX+boxW, y+rowH);
-        y += rowH;
-      }
-      var topY = y;
-      moneyRow("Total", money(o.cost), false, false);
-      moneyRow("Deposit paid", money(o.deposit), false, false);
-      moneyRow("Balance due at pickup", money(balance(o)), true, true);
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.8);
-      doc.rect(boxX, topY, boxW, y-topY); // outer border
-      y += 12;
-
-      // Disclaimer
-      doc.setFont("helvetica","italic"); doc.setFontSize(8.5); doc.setTextColor(90,90,90);
-      var disc = doc.splitTextToSize(PRICE_DISCLAIMER, right - M);
-      doc.text(disc, M, y); y += disc.length*11 + 30;
-
-      // Signature lines
-      var sigW = (right - M - 40) / 2;
-      doc.setDrawColor(0,0,0); doc.setLineWidth(0.6);
-      doc.line(M, y, M+sigW, y);
-      doc.line(M+sigW+40, y, right, y);
-      doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(70,70,70);
-      doc.text("Customer signature", M, y+12);
-      doc.text("Date", M+sigW+40, y+12);
-
-      // Footer
-      var fy = doc.internal.pageSize.getHeight() - 40;
-      doc.setDrawColor(200,200,200); doc.setLineWidth(0.4); doc.line(M, fy-8, right, fy-8);
-      doc.setFontSize(8); doc.setTextColor(120,120,120);
-      doc.text("Please retain this receipt · Present order number "+(o.number||"")+" at pickup · Thank you for your business", W/2, fy, { align:"center" });
-
-      doc.save(invoiceFilename(o));
-    });
-  }
-
   /* ---------------- Email (opens Outlook via mailto) ---------------- */
+  var RULE = "──────────────────────────────────────────";
   function shopSignature(){
-    var s = state.settings, lines = [s.shopName];
-    if(s.address) lines.push(s.address);
-    if(s.phone) lines.push(s.phone);
-    if(s.email) lines.push(s.email);
-    if(s.hours) lines.push(s.hours);
-    return lines.join("\n");
+    var s = state.settings;
+    var contact = [s.address, s.phone, s.email, s.hours].filter(Boolean).join("  ·  ");
+    return (s.shopName||"Fargo Hanna") + (contact ? "\n"+contact : "");
   }
   function emailWorkOrder(o){
     if(!o.customer.email){ toast("No email on file — add one via Edit"); return; }
     var s = state.settings;
+    var shopName = s.shopName || "Fargo Hanna";
+    var rugLines = activeRugs(o).map(function(rr){
+      return "  Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+":  "+(rr.description||"—");
+    }).join("\n");
     var body =
+      shopName.toUpperCase()+"\n"+
+      "Work Order Receipt  ·  "+o.number+"\n"+
+      RULE+"\n\n"+
       "Dear "+o.customer.name+",\n\n"+
-      "Thank you for trusting "+s.shopName+" with your rug. Your work order is attached as a PDF. Here is a summary:\n\n"+
-      "Work order:   "+o.number+"\n"+
-      "Type of work: "+typeLabel(o.type)+"\n"+
-      (o.item.description?"Details:      "+o.item.description+"\n":"")+
-      (o.item.dimensions?"Rug size:     "+o.item.dimensions+"\n":"")+
-      (o.item.addons?"Add-ons:      "+o.item.addons+"\n":"")+
-      "Dropped off:  "+fmtDate(o.dropoffDate)+"\n"+
-      "Expected ready: "+fmtDate(o.readyDate)+"\n\n"+
-      "Total:        "+money(o.cost)+"\n"+
-      "Deposit paid: "+money(o.deposit)+"\n"+
-      "Balance due:  "+money(balance(o))+"\n\n"+
+      "Thank you for trusting us with your rug. Here's a summary of your order:\n\n"+
+      "CUSTOMER\n"+
+      "  "+o.customer.name+"\n"+
+      (o.customer.phone?"  "+o.customer.phone+"\n":"")+
+      (o.customer.email?"  "+o.customer.email+"\n":"")+
+      "\n"+
+      "SERVICE\n"+
+      "  Type of work:    "+typeLabel(o.type)+"\n"+
+      "  Dropped off:     "+fmtDate(o.dropoffDate)+"\n"+
+      "  Expected ready:  "+fmtDate(o.readyDate)+"\n\n"+
+      (rugLines ? "RUGS & WORK\n"+rugLines+"\n\n" : "")+
+      (o.addons ? "ADD-ONS\n  "+o.addons+"\n\n" : "")+
+      RULE+"\n"+
+      "  Subtotal                    "+money(o.subtotal)+"\n"+
+      "  Sales tax"+(o.taxEnabled?" (7.5%)":" (n/a)")+"                "+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+"\n"+
+      "  Total                       "+money(o.cost)+"\n"+
+      "  Deposit paid                "+money(o.deposit)+"\n"+
+      "  Balance due at pickup       "+money(balance(o))+"\n"+
+      RULE+"\n\n"+
       PRICE_DISCLAIMER+"\n\n"+
-      "We’ll be in touch when your rug is ready. Please keep this order number for your records.\n\n"+
+      "We'll be in touch as soon as your rug is ready. Please keep this order number for your records.\n\n"+
       "Warm regards,\n"+shopSignature();
-    var subject = s.shopName+" — Work Order "+o.number;
-
-    // Generate + download the PDF invoice, then open the pre-filled email.
-    // (mailto can't attach files, so the PDF downloads and you drag it into the message.)
-    toast("Preparing PDF invoice…");
-    downloadInvoicePdf(o).then(function(){
-      openMail(o.customer.email, subject, body);
-      toast("Invoice downloaded — drag it into the email to attach");
-    }).catch(function(err){
-      openMail(o.customer.email, subject, body);
-      toast("Email opened. PDF couldn’t auto-generate — use Print → Save as PDF.");
-    });
+    var subject = shopName+" — Work Order Receipt "+o.number;
+    openMail(o.customer.email, subject, body);
+    toast("Email ready in Outlook — review and send");
   }
   function markReady(o){
     if(!o.customer.email){ toast("Add an email first (Edit)"); return; }
     o.status = "Ready for Pickup"; touch(o); saveOrders();
     var s = state.settings;
+    var shopName = s.shopName || "Fargo Hanna";
     var body =
+      shopName.toUpperCase()+"\n"+
+      "Your Rug Is Ready For Pickup\n"+
+      RULE+"\n\n"+
       "Dear "+o.customer.name+",\n\n"+
       "Good news — your rug is ready for pickup!\n\n"+
-      "Work order:  "+o.number+"\n"+
-      "Type of work: "+typeLabel(o.type)+"\n"+
-      "Balance due at pickup: "+money(balance(o))+"\n\n"+
+      "  Work order:      "+o.number+"\n"+
+      "  Type of work:    "+typeLabel(o.type)+"\n"+
+      "  Balance due:     "+money(balance(o))+"\n\n"+
       "Please stop by at your convenience. If you have any questions, just reply to this email or give us a call.\n\n"+
       "Thank you,\n"+shopSignature();
-    openMail(o.customer.email, s.shopName+" — Your rug is ready ("+o.number+")", body);
+    openMail(o.customer.email, shopName+" — Your Rug Is Ready ("+o.number+")", body);
     renderDetail();
     toast("Marked ready — email drafted in Outlook");
   }
@@ -1381,6 +1765,7 @@
     +     (contact?'<div class="contact">'+esc(contact)+'</div>':'')
     +   '</div>'
     +   '<div class="print-title"><h2>'+typeLabel(o.type)+' Work Order</h2><span class="pnum">'+esc(o.number)+'</span></div>'
+    +   (o.status==="Canceled" ? '<div class="print-notes" style="border:1.5px solid #7e2b34"><h3>CANCELED'+(o.canceledAt?' — '+esc(fmtDate((o.canceledAt||"").slice(0,10))):'')+'</h3><div>Reason: '+esc(o.cancelReason||"—")+'</div></div>' : '')
     +   '<div class="print-cols">'
     +     '<div><h3>Customer</h3>'
     +       pl("Name", o.customer.name) + pl("Phone", o.customer.phone)
@@ -1389,12 +1774,23 @@
     +     '<div><h3>Service</h3>'
     +       pl("Type", typeLabel(o.type)) + pl("Dropped off", fmtDate(o.dropoffDate))
     +       pl("Expected ready", fmtDate(o.readyDate))
-    +       (o.item.dimensions?pl("Rug size", o.item.dimensions):"")
-    +       (o.item.addons?pl("Add-ons", o.item.addons):"")
+    +       (o.addons?pl("Add-ons", o.addons):"")
     +     '</div>'
     +   '</div>'
-    +   '<div class="print-notes"><h3>Description &amp; work to be done</h3><div>'+esc(o.item.description||"—")+'</div></div>'
+    +   (activeRugs(o).length
+          ? activeRugs(o).map(function(rr){
+              var text = '<h3>Rug '+rr.n+(rr.dimensions?' — '+esc(rr.dimensions):'')+'</h3><div>'+esc(rr.description||"—")+'</div>';
+              var diagram = rr.marks && rr.marks.length
+                ? '<div class="print-rug-diagram">'+rugDiagramSVG(rr.marks)+'</div>'
+                : '';
+              return diagram
+                ? '<div class="print-notes"><div class="print-rug-flex"><div class="prf-text">'+text+'</div>'+diagram+'</div></div>'
+                : '<div class="print-notes">'+text+'</div>';
+            }).join("")
+          : '<div class="print-notes"><h3>Description &amp; work to be done</h3><div>—</div></div>')
     +   '<div class="print-money">'
+    +     '<div class="pline"><span>Subtotal</span><span>'+money(o.subtotal)+'</span></div>'
+    +     '<div class="pline"><span>Sales tax'+(o.taxEnabled?' (7.5% NC)':' (not applied)')+'</span><span>'+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+'</span></div>'
     +     '<div class="pline"><span>Total</span><span>'+money(o.cost)+'</span></div>'
     +     '<div class="pline"><span>Deposit paid</span><span>'+money(o.deposit)+'</span></div>'
     +     '<div class="pline"><span>Balance due at pickup</span><span>'+money(balance(o))+'</span></div>'
@@ -1506,16 +1902,21 @@
     return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0");
   }
   function exportJSON(){
-    var data = { app:"Fargo Hanna Work Orders", version:1, exportedAt:new Date().toISOString(),
-                 settings:state.settings, orders:state.orders };
+    var data = { app:"Fargo Hanna Work Orders", version:2, exportedAt:new Date().toISOString(),
+                 settings:state.settings, orders:state.orders, customers:state.customers };
     download("fargo-hanna-backup-"+stamp()+".json", JSON.stringify(data,null,2), "application/json");
     toast("Backup downloaded — save it to OneDrive");
   }
   function exportCSV(){
-    var head = ["Number","Status","Type","Customer","Phone","Email","Description","Dropped off","Expected ready","Total","Deposit","Balance"];
+    var head = ["Number","Status","Type","Customer","Phone","Email","Description","Dropped off","Expected ready","Subtotal","Tax","Total","Deposit","Balance"];
     var rows = state.orders.map(function(o){
+      var rugText = activeRugs(o).map(function(rr){
+        return "Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+": "+(rr.description||"");
+      }).join(" | ");
+      var taxAmt = o.taxEnabled ? (Number(o.subtotal)||0)*TAX_RATE : 0;
       return [o.number,o.status,typeLabel(o.type),o.customer.name,o.customer.phone,o.customer.email,
-        (o.item.description||"").replace(/\s+/g," "),o.dropoffDate,o.readyDate,
+        rugText.replace(/\s+/g," "),o.dropoffDate,o.readyDate,
+        (Number(o.subtotal)||0).toFixed(2), taxAmt.toFixed(2),
         (Number(o.cost)||0).toFixed(2),(Number(o.deposit)||0).toFixed(2),balance(o).toFixed(2)];
     });
     var csv = [head].concat(rows).map(function(r){
@@ -1533,8 +1934,10 @@
         if(!data.orders || !Array.isArray(data.orders)) throw new Error("bad");
         if(!confirm("Restore "+data.orders.length+" work orders from this backup?\nThis replaces what’s currently on this computer.")) return;
         state.orders = data.orders;
+        state.orders.forEach(migrateOrderShape);
         if(data.settings) state.settings = Object.assign(state.settings, data.settings);
-        saveOrders(); saveSettings();
+        if(data.customers && Array.isArray(data.customers)) state.customers = data.customers;
+        saveOrders(); saveSettings(); saveCustomers();
         toast("Restored "+data.orders.length+" work orders");
         go("list");
       } catch(err){ alert("That file couldn’t be read as a Fargo Hanna backup. Make sure it’s a .json backup exported from this app."); }
