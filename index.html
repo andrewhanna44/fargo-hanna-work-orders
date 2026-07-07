@@ -258,6 +258,13 @@
   /* ---------- Rug diagram ---------- */
   .rug-diagram-wrap{ margin-top:12px; padding:10px; background:#faf7f0; border:1px dashed var(--line); border-radius:8px; }
   .rug-diagram-wrap .rdg-label{ font-size:10.5px; color:var(--ink-soft); margin-bottom:6px; line-height:1.35; }
+  .rdg-tools{ display:flex; gap:4px; margin-bottom:7px; }
+  .rdg-tool{
+    flex:1; padding:4px 2px; font-size:11px; font-weight:600; border:1px solid var(--line); background:#fff;
+    color:var(--ink-soft); border-radius:6px; cursor:pointer; white-space:nowrap;
+  }
+  .rdg-tool:hover{ border-color:#c9bfa8; }
+  .rdg-tool.active{ background:var(--indigo); border-color:var(--indigo); color:#fff; }
   .rug-diagram-canvas{ margin-bottom:6px; }
   .rug-diagram-canvas svg{ width:100%; height:auto; display:block; cursor:crosshair; background:#fff; border-radius:6px; }
   .rug-diagram-canvas.readonly svg{ cursor:default; }
@@ -288,6 +295,11 @@
   .panel{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px; }
   .panel h4{ font-family:var(--display); font-size:15px; margin:0 0 12px; color:var(--indigo); }
   .status-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .cancel-link{
+    display:block; width:100%; margin-top:14px; padding-top:12px; border:0; border-top:1px dotted var(--line);
+    background:transparent; color:var(--madder); font-weight:700; font-size:13px; cursor:pointer; text-align:left;
+  }
+  .cancel-link:hover{ color:var(--madder-700); text-decoration:underline; }
   .status-opt{ border:1px solid var(--line); background:var(--white); border-radius:20px; padding:6px 13px; font-size:12.5px; cursor:pointer; font-weight:600; color:var(--ink-soft); }
   .status-opt.active{ background:var(--indigo); border-color:var(--indigo); color:#fff; }
   .money-summary .line{ display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
@@ -494,6 +506,15 @@
 
   var PRICE_DISCLAIMER = "Price subject to change pending any additional work required throughout the service process. Fargo Hanna will not perform any work outside the original scope without prior approval of the customer. We will always contact you to discuss before proceeding.";
   var TAX_RATE = 0.075; // Durham / North Carolina sales tax
+  var MASTER_PASSWORD = "mjh62";
+  // Gate a sensitive action (delete, mark-ready-and-email) behind the manager password.
+  // Calls action() only if the correct password is entered; silently does nothing if canceled.
+  function requireManagerPassword(actionLabel, action){
+    var pw = window.prompt("Manager password required to "+actionLabel+":");
+    if(pw === null) return; // they hit Cancel on the prompt — abort quietly
+    if(pw !== MASTER_PASSWORD){ alert("Incorrect password. Action canceled."); return; }
+    action();
+  }
 
   /* ---------------- Storage ---------------- */
   var ORDERS_KEY = "FH_WORKORDERS_v1";
@@ -1209,11 +1230,13 @@
       var c = getCustomer(state.custFormId);
       if(!c) return;
       if(!confirm("Delete customer "+c.name+"? This does not delete their past work orders.")) return;
-      state.customers = state.customers.filter(function(x){ return x.id!==c.id; });
-      saveCustomers();
-      state.custFormId = null;
-      toast("Customer deleted");
-      renderCustomers();
+      requireManagerPassword("delete this customer", function(){
+        state.customers = state.customers.filter(function(x){ return x.id!==c.id; });
+        saveCustomers();
+        state.custFormId = null;
+        toast("Customer deleted");
+        renderCustomers();
+      });
     });
   }
 
@@ -1247,8 +1270,8 @@
     +   '<div class="grid">'
     +     field("Name","cust_name",o.customer.name,{req:true})
     +     field("Phone","cust_phone",o.customer.phone,{req:true,type:"tel"})
-    +     field("Email","cust_email",o.customer.email,{type:"email",hint:"Needed to email the work order"})
-    +     field("Address","cust_address",o.customer.address,{})
+    +     field("Email","cust_email",o.customer.email,{req:true,type:"email",hint:"Required — used to email the work order"})
+    +     field("Address","cust_address",o.customer.address,{req:true})
     +   '</div>'
     + '</fieldset>'
 
@@ -1379,30 +1402,117 @@
       });
     })();
 
-    // Rug diagrams — click to add/remove issue marks; marks live directly on o.rugs[n-1].marks
-    // so they're already up to date on o by the time submitForm() reads it.
+    // Rug diagrams — mark a spot, draw a line, or draw a box; annotations live directly on
+    // o.rugs[n-1].marks so they're already up to date on o by the time submitForm() reads it.
+    var rugTool = {1:"point",2:"point",3:"point",4:"point"};
     [1,2,3,4].forEach(function(n){
       var container = main.querySelector('.rug-diagram-canvas[data-rugidx="'+n+'"]');
       if(!container) return;
       if(!o.rugs[n-1].marks) o.rugs[n-1].marks = [];
+
       function redraw(){
         container.innerHTML = rugDiagramSVG(o.rugs[n-1].marks);
-        wireClicks();
+        wireSvg();
       }
-      function wireClicks(){
+
+      function wireSvg(){
         var svg = container.querySelector("svg");
-        svg.addEventListener("click", function(e){
+        svg.style.touchAction = "none";
+        var down = false, startPt = null, linePts = null, previewEl = null;
+
+        function clearPreview(){
+          if(previewEl && previewEl.parentNode) previewEl.parentNode.removeChild(previewEl);
+          previewEl = null;
+        }
+
+        svg.addEventListener("pointerdown", function(e){
           var pt = svgPoint(svg, e);
           if(!pt) return;
+          down = true; startPt = pt;
+          try { svg.setPointerCapture(e.pointerId); } catch(err){}
+          var tool = rugTool[n];
+          if(tool === "line"){
+            linePts = [pt];
+            previewEl = document.createElementNS("http://www.w3.org/2000/svg","polyline");
+            previewEl.setAttribute("fill","none");
+            previewEl.setAttribute("stroke","#7e2b34");
+            previewEl.setAttribute("stroke-width","2.5");
+            previewEl.setAttribute("stroke-linecap","round");
+            previewEl.setAttribute("stroke-linejoin","round");
+            previewEl.setAttribute("stroke-dasharray","4 3");
+            svg.appendChild(previewEl);
+          } else if(tool === "box"){
+            previewEl = document.createElementNS("http://www.w3.org/2000/svg","rect");
+            previewEl.setAttribute("fill","#c0392b"); previewEl.setAttribute("fill-opacity","0.10");
+            previewEl.setAttribute("stroke","#7e2b34"); previewEl.setAttribute("stroke-width","2");
+            previewEl.setAttribute("stroke-dasharray","4 3");
+            svg.appendChild(previewEl);
+          }
+        });
+
+        svg.addEventListener("pointermove", function(e){
+          if(!down) return;
+          var pt = svgPoint(svg, e);
+          if(!pt) return;
+          var tool = rugTool[n];
+          if(tool === "line" && previewEl){
+            linePts.push(pt);
+            previewEl.setAttribute("points", linePts.map(function(p){ return p.x.toFixed(1)+","+p.y.toFixed(1); }).join(" "));
+          } else if(tool === "box" && previewEl){
+            var x1=Math.min(startPt.x,pt.x), y1=Math.min(startPt.y,pt.y);
+            var w=Math.abs(pt.x-startPt.x), h=Math.abs(pt.y-startPt.y);
+            previewEl.setAttribute("x",x1); previewEl.setAttribute("y",y1);
+            previewEl.setAttribute("width",w); previewEl.setAttribute("height",h);
+          }
+        });
+
+        svg.addEventListener("pointerup", function(e){
+          if(!down) return;
+          down = false;
+          var pt = svgPoint(svg, e) || startPt;
+          var tool = rugTool[n];
           var marks = o.rugs[n-1].marks;
-          var hitIdx = -1;
-          marks.forEach(function(m, i){ if(hitIdx===-1 && Math.hypot(m.x-pt.x, m.y-pt.y) < 10) hitIdx = i; });
-          if(hitIdx >= 0) marks.splice(hitIdx, 1);
-          else marks.push(pt);
+
+          if(tool === "point"){
+            var dist = (pt && startPt) ? Math.hypot(pt.x-startPt.x, pt.y-startPt.y) : 0;
+            if(dist < 6){
+              var hitIdx = hitTestMarks(marks, pt);
+              if(hitIdx >= 0) marks.splice(hitIdx, 1);
+              else marks.push({type:"point", x:pt.x, y:pt.y});
+            }
+          } else if(tool === "line"){
+            if(linePts && linePts.length > 1){
+              var end = linePts[linePts.length-1];
+              var travel = Math.hypot(end.x-linePts[0].x, end.y-linePts[0].y);
+              if(linePts.length > 2 || travel > 4) marks.push({type:"line", points:linePts});
+            }
+          } else if(tool === "box"){
+            if(startPt && pt){
+              var bx=Math.min(startPt.x,pt.x), by=Math.min(startPt.y,pt.y);
+              var bw=Math.abs(pt.x-startPt.x), bh=Math.abs(pt.y-startPt.y);
+              if(bw > 4 && bh > 4) marks.push({type:"box", x:bx, y:by, w:bw, h:bh});
+            }
+          }
+          clearPreview();
+          startPt = null; linePts = null;
           redraw();
         });
+
+        svg.addEventListener("pointercancel", function(){
+          down = false; clearPreview(); startPt = null; linePts = null;
+        });
       }
-      wireClicks();
+
+      redraw();
+
+      var toolBtns = main.querySelectorAll('.rdg-tool[data-rugidx="'+n+'"]');
+      toolBtns.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          rugTool[n] = btn.dataset.tool;
+          toolBtns.forEach(function(b){ b.classList.toggle("active", b===btn); });
+        });
+      });
+
       var clearBtn = main.querySelector('.rug-clear-btn[data-rugidx="'+n+'"]');
       if(clearBtn) clearBtn.addEventListener("click", function(){ o.rugs[n-1].marks = []; redraw(); });
     });
@@ -1421,7 +1531,12 @@
       +   '<textarea id="rug'+n+'_desc" placeholder="e.g. 9x12 Persian Tabriz, wine stain in center">'+esc(r.description)+'</textarea></div>'
       + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 9×12"})
       + '<div class="rug-diagram-wrap">'
-      +   '<div class="rdg-label">Click the rug to mark an issue spot. Click a mark to remove it.</div>'
+      +   '<div class="rdg-label">Mark spot, draw a line, or draw a box. Click an existing mark with the ✕ tool to remove it.</div>'
+      +   '<div class="rdg-tools">'
+      +     '<button type="button" class="rdg-tool active" data-rugidx="'+n+'" data-tool="point" title="Mark a spot">✕ Mark</button>'
+      +     '<button type="button" class="rdg-tool" data-rugidx="'+n+'" data-tool="line" title="Click and drag to draw a line">╱ Line</button>'
+      +     '<button type="button" class="rdg-tool" data-rugidx="'+n+'" data-tool="box" title="Click and drag to draw a box">▭ Box</button>'
+      +   '</div>'
       +   '<div class="rug-diagram-canvas" data-rugidx="'+n+'">'+rugDiagramSVG(r.marks||[])+'</div>'
       +   '<button type="button" class="btn ghost rug-clear-btn" data-rugidx="'+n+'">Clear marks</button>'
       + '</div>'
@@ -1440,6 +1555,14 @@
       return out;
     }
     var marksHtml = marks.map(function(m){
+      if(m.type === "line" && m.points && m.points.length > 1){
+        var pts = m.points.map(function(p){ return p.x.toFixed(1)+","+p.y.toFixed(1); }).join(" ");
+        return '<polyline points="'+pts+'" fill="none" stroke="#7e2b34" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
+      if(m.type === "box"){
+        return '<rect x="'+m.x+'" y="'+m.y+'" width="'+m.w+'" height="'+m.h+'" fill="#c0392b" fill-opacity="0.12" stroke="#7e2b34" stroke-width="2"/>';
+      }
+      // default / legacy: a plain {x,y} point — draw the X-in-circle mark
       return '<g transform="translate('+m.x+','+m.y+')">'
         + '<circle r="8" fill="#c0392b" fill-opacity="0.18" stroke="#7e2b34" stroke-width="1.5"/>'
         + '<line x1="-5" y1="-5" x2="5" y2="5" stroke="#7e2b34" stroke-width="2"/>'
@@ -1453,6 +1576,31 @@
       +   '<rect x="36" y="20" width="228" height="140" fill="none" stroke="#c2a06a" stroke-width="1" stroke-dasharray="4 3"/>'
       +   marksHtml
       + '</svg>';
+  }
+  // Distance from point p to segment a-b — used to hit-test clicks on drawn lines.
+  function distToSegment(p, a, b){
+    var dx=b.x-a.x, dy=b.y-a.y;
+    var len2 = dx*dx+dy*dy;
+    if(len2===0) return Math.hypot(p.x-a.x, p.y-a.y);
+    var t = ((p.x-a.x)*dx + (p.y-a.y)*dy)/len2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(p.x-(a.x+t*dx), p.y-(a.y+t*dy));
+  }
+  // Finds the topmost annotation under point pt (point / line / box), or -1 if none.
+  function hitTestMarks(marks, pt){
+    for(var i=marks.length-1; i>=0; i--){
+      var m = marks[i];
+      if(!m.type || m.type==="point"){
+        if(Math.hypot(m.x-pt.x, m.y-pt.y) < 10) return i;
+      } else if(m.type==="box"){
+        if(pt.x>=m.x && pt.x<=m.x+m.w && pt.y>=m.y && pt.y<=m.y+m.h) return i;
+      } else if(m.type==="line" && m.points){
+        for(var j=0; j<m.points.length-1; j++){
+          if(distToSegment(pt, m.points[j], m.points[j+1]) < 7) return i;
+        }
+      }
+    }
+    return -1;
   }
   // Converts a click event on an <svg> into coordinates in that svg's own viewBox space.
   function svgPoint(svg, evt){
@@ -1481,9 +1629,11 @@
     var errs = [];
     function mark(id, bad){ var el=main.querySelector("#"+id); if(el) el.classList.toggle("err", !!bad); }
 
-    var name=g("cust_name"), phone=g("cust_phone"), subtotal=g("subtotal");
+    var name=g("cust_name"), phone=g("cust_phone"), email=g("cust_email"), address=g("cust_address"), subtotal=g("subtotal");
     mark("cust_name", !name); if(!name) errs.push("name");
     mark("cust_phone", !phone); if(!phone) errs.push("phone");
+    mark("cust_email", !email); if(!email) errs.push("email");
+    mark("cust_address", !address); if(!address) errs.push("address");
     mark("subtotal", subtotal===""); if(subtotal==="") errs.push("subtotal");
     var typeOk = !!typeEl;
 
@@ -1495,7 +1645,7 @@
 
     var o = editing ? getOrder(state.selectedId) : base;
     o.type = typeEl.value;
-    o.customer = { name:name, phone:phone, email:g("cust_email"), address:g("cust_address") };
+    o.customer = { name:name, phone:phone, email:email, address:address };
     var oldRugs = o.rugs || [];
     o.rugs = [1,2,3,4].map(function(n){
       return { description:g("rug"+n+"_desc"), dimensions:g("rug"+n+"_dim"), marks:(oldRugs[n-1] && oldRugs[n-1].marks) || [] };
@@ -1565,9 +1715,6 @@
     +   '<button class="btn sage" id="btnPrint">🖨 Print copy</button>'
     +   '<button class="btn primary" id="btnEmail">✉ Email work order</button>'
     +   '<button class="btn" id="btnEdit">✎ Edit</button>'
-    +   (o.status==="Canceled"
-          ? '<button class="btn" id="btnReopen">↺ Reopen work order</button>'
-          : '<button class="btn madder" id="btnCancel">⛔ Cancel work order</button>')
     +   '<button class="btn danger" id="btnDelete">Delete</button>'
     + '</div>'
 
@@ -1618,10 +1765,12 @@
     +   '<div class="side-panel">'
     +     '<div class="panel"><h4>Status</h4>'
     +       (o.status==="Canceled"
-              ? '<div class="doc-notes" style="margin:0">This order is canceled. Use “Reopen work order” above to restore it to '+esc(o.statusBeforeCancel||"New")+'.</div>'
+              ? '<div class="doc-notes" style="margin:0 0 12px">This order is canceled.</div>'
+                + '<button class="btn" id="btnReopen" style="width:100%">↺ Reopen work order</button>'
               : '<div class="status-row" id="statusRow">'
                 + STATUSES.map(function(s){ return '<button class="status-opt'+(o.status===s?" active":"")+'" data-status="'+s+'">'+s+'</button>'; }).join("")
-                + '</div>')
+                + '</div>'
+                + '<button class="cancel-link" id="btnCancel">⛔ Cancel work order</button>')
     +     '</div>'
     +     '<div class="panel money-summary"><h4>Payment</h4>'
     +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
@@ -1677,8 +1826,10 @@
   }
   function deleteOrder(o){
     if(!confirm("Delete work order "+o.number+" for "+o.customer.name+"?\nThis can’t be undone (but your last OneDrive backup still has it).")) return;
-    state.orders = state.orders.filter(function(x){ return x.id!==o.id; });
-    saveOrders(); toast("Deleted "+o.number); go("list");
+    requireManagerPassword("delete this work order", function(){
+      state.orders = state.orders.filter(function(x){ return x.id!==o.id; });
+      saveOrders(); toast("Deleted "+o.number); go("list");
+    });
   }
 
   /* ---------------- Email (opens Outlook via mailto) ---------------- */
@@ -1728,23 +1879,25 @@
   }
   function markReady(o){
     if(!o.customer.email){ toast("Add an email first (Edit)"); return; }
-    o.status = "Ready for Pickup"; touch(o); saveOrders();
-    var s = state.settings;
-    var shopName = s.shopName || "Fargo Hanna";
-    var body =
-      shopName.toUpperCase()+"\n"+
-      "Your Rug Is Ready For Pickup\n"+
-      RULE+"\n\n"+
-      "Dear "+o.customer.name+",\n\n"+
-      "Good news — your rug is ready for pickup!\n\n"+
-      "  Work order:      "+o.number+"\n"+
-      "  Type of work:    "+typeLabel(o.type)+"\n"+
-      "  Balance due:     "+money(balance(o))+"\n\n"+
-      "Please stop by at your convenience. If you have any questions, just reply to this email or give us a call.\n\n"+
-      "Thank you,\n"+shopSignature();
-    openMail(o.customer.email, shopName+" — Your Rug Is Ready ("+o.number+")", body);
-    renderDetail();
-    toast("Marked ready — email drafted in Outlook");
+    requireManagerPassword("mark this order ready and email the customer", function(){
+      o.status = "Ready for Pickup"; touch(o); saveOrders();
+      var s = state.settings;
+      var shopName = s.shopName || "Fargo Hanna";
+      var body =
+        shopName.toUpperCase()+"\n"+
+        "Your Rug Is Ready For Pickup\n"+
+        RULE+"\n\n"+
+        "Dear "+o.customer.name+",\n\n"+
+        "Good news — your rug is ready for pickup!\n\n"+
+        "  Work order:      "+o.number+"\n"+
+        "  Type of work:    "+typeLabel(o.type)+"\n"+
+        "  Balance due:     "+money(balance(o))+"\n\n"+
+        "Please stop by at your convenience. If you have any questions, just reply to this email or give us a call.\n\n"+
+        "Thank you,\n"+shopSignature();
+      openMail(o.customer.email, shopName+" — Your Rug Is Ready ("+o.number+")", body);
+      renderDetail();
+      toast("Marked ready — email drafted in Outlook");
+    });
   }
   function openMail(to, subject, body){
     var url = "mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
