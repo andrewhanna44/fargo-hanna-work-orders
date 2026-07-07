@@ -130,6 +130,11 @@
     background:var(--white); border:1px solid var(--line); border-radius:var(--r);
     padding:9px 12px; font-size:14px; color:var(--ink); font-family:inherit; cursor:pointer;
   }
+  .type-filter{
+    display:flex; align-items:center; gap:9px;
+    background:var(--white); border:1px solid var(--line); border-radius:var(--r); padding:9px 13px;
+  }
+  .type-filter select.filter{ border:0; background:transparent; padding:0; flex:1; }
 
   /* ---------- Order list ---------- */
   .order-row{
@@ -358,6 +363,7 @@
     transition:border-color .12s, box-shadow .12s;
   }
   .bucket-all:hover{ border-color:#c9bfa8; box-shadow:0 2px 10px rgba(33,30,26,.07); }
+  .bucket-all.active{ border-color:var(--madder); box-shadow:0 2px 10px rgba(33,30,26,.1); background:#fbf3f3; }
   .bucket-all .b-count{ font-family:var(--display); font-size:30px; font-weight:600; color:var(--ink); line-height:1; }
   .bucket-all .b-label{ font-size:13px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
   .buckets{ display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
@@ -717,6 +723,7 @@
     selectedId: null,
     editingId: null,
     search: "",
+    filterStatus: "all",
     filterType: "all",
     orders: loadOrders(),
     customers: loadCustomers(),
@@ -988,19 +995,17 @@
       counts[o.status]++;
       if(isStalled(o) || isOverdue(o) || isDueSoon(o)) alerts[o.status]++;
     });
-    var allBox = '<button class="bucket-all" data-scrollto="all">'
+    var allBox = '<button class="bucket-all'+(state.filterStatus==="all"?" active":"")+'" data-bucket="all">'
       + '<div class="b-count">'+base.length+'</div><div class="b-label">All Work Orders</div></button>';
     var cards = '';
     STATUS_GROUPS.forEach(function(s){
       var a = alerts[s] ? '<span class="b-alert">⚑ '+alerts[s]+'</span>' : '';
-      cards += '<button class="bucket-card '+bucketMeta(s)+'" data-scrollto="'+esc(s)+'">'
+      cards += '<button class="bucket-card '+bucketMeta(s)+(state.filterStatus===s?" active":"")+'" data-bucket="'+esc(s)+'">'
         + '<div class="b-count">'+(counts[s]||0)+'</div>'
         + '<div class="b-label">'+esc(s)+a+'</div></button>';
     });
     return allBox + '<div class="buckets">'+cards+'</div>';
   }
-
-  function groupAnchorId(s){ return "grp-"+s.replace(/[^A-Za-z0-9]+/g,"-"); }
 
   function renderList(){
     var base = baseFiltered();
@@ -1012,7 +1017,7 @@
       + '</div>'
       + '<div class="toolbar">'
       +   '<div class="search"><span>🔍</span><input id="search" placeholder="Search name, phone, number…" value="'+esc(state.search)+'"></div>'
-      +   '<select class="filter" id="fType">'+typeOptions(state.filterType)+'</select>'
+      +   '<div class="type-filter"><span>▤</span><select class="filter" id="fType">'+typeOptions(state.filterType)+'</select></div>'
       + '</div>'
       + bucketCardsHtml(base);
 
@@ -1020,29 +1025,35 @@
       html += emptyState("No work orders yet","Create your first one to start tracking cleaning, repairs, and pads.");
     } else {
       var listHead = '<div class="list-head"><div>Order</div><div>Customer</div><div class="c-type">Type</div><div>Status</div><div class="r c-cost">Total</div></div>';
-      // Always show every status, grouped — the type filter above narrows what's inside each group.
-      var any = false;
-      STATUS_GROUPS.forEach(function(s){
-        var rows = base.filter(function(o){ return o.status===s; });
-        if(!rows.length) return;
-        any = true;
-        html += '<div class="group-head" id="'+groupAnchorId(s)+'"><span class="badge '+statusMeta(s).cls+'">'+esc(s)+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
-        html += listHead;
-        rows.forEach(function(o){ html += orderRowHtml(o); });
-      });
-      if(!any) html += emptyState("No matches","Try a different search or type filter.");
+      if(state.filterStatus === "all"){
+        // Grouped view — every status shown together, the type filter above narrows what's inside each group.
+        var any = false;
+        STATUS_GROUPS.forEach(function(s){
+          var rows = base.filter(function(o){ return o.status===s; });
+          if(!rows.length) return;
+          any = true;
+          html += '<div class="group-head"><span class="badge '+statusMeta(s).cls+'">'+esc(s)+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
+          html += listHead;
+          rows.forEach(function(o){ html += orderRowHtml(o); });
+        });
+        if(!any) html += emptyState("No matches","Try a different search or type filter.");
+      } else {
+        // A single bucket was clicked — filter down to just that status.
+        var rows2 = base.filter(function(o){ return o.status===state.filterStatus; });
+        if(!rows2.length){
+          html += emptyState("Nothing in “"+state.filterStatus+"”","No work orders match this status and filter right now.");
+        } else {
+          html += listHead;
+          rows2.forEach(function(o){ html += orderRowHtml(o); });
+        }
+      }
     }
     main.innerHTML = html;
 
     document.getElementById("search").addEventListener("input", function(e){ state.search=e.target.value; refreshListOnly(); });
     document.getElementById("fType").addEventListener("change", function(e){ state.filterType=e.target.value; refreshListOnly(); });
-    main.querySelectorAll("[data-scrollto]").forEach(function(el){
-      el.addEventListener("click", function(){
-        var key = el.dataset.scrollto;
-        var target = key==="all" ? main.querySelector(".page-head") : document.getElementById(groupAnchorId(key));
-        if(target) target.scrollIntoView({ behavior:"smooth", block:"start" });
-        else toast("No work orders in “"+key+"” right now");
-      });
+    main.querySelectorAll("[data-bucket]").forEach(function(el){
+      el.addEventListener("click", function(){ state.filterStatus = el.dataset.bucket; renderList(); });
     });
     main.querySelectorAll("[data-open]").forEach(function(el){
       el.addEventListener("click", function(){ go("detail", el.dataset.open); });
@@ -1058,7 +1069,7 @@
     if(caret!==null){ var s=document.getElementById("search"); s.focus(); s.setSelectionRange(caret,caret); }
   }
   function typeOptions(sel){
-    var types=[["all","All types"],["cleaning","Cleaning"],["repair","Repair"],["pad","Pad"],["misc","Misc"]];
+    var types=[["all","Filter Work Order Types"],["cleaning","Cleaning"],["repair","Repair"],["pad","Pad"],["misc","Misc"]];
     return types.map(function(t){ return '<option value="'+t[0]+'"'+(sel===t[0]?" selected":"")+'>'+t[1]+'</option>'; }).join("");
   }
   function emptyState(title, sub){
