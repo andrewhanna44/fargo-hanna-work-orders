@@ -273,21 +273,28 @@
   .rug-diagram-canvas{ margin-bottom:6px; }
   .rug-diagram-canvas svg{ width:100%; height:auto; display:block; cursor:crosshair; background:#fff; border-radius:6px; }
   .rug-diagram-canvas.readonly svg{ cursor:default; }
-  .rug-clear-btn{ font-size:11.5px; padding:4px 10px; }
+  .rug-clear-btn, .rug-undo-btn{ font-size:11.5px; padding:4px 10px; }
 
   /* ---------- Rug service checkboxes ---------- */
-  .rug-svc-wrap{ margin-top:10px; padding:10px; background:#faf7f0; border:1px dashed var(--line); border-radius:8px; }
-  .rug-svc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+  .rug-svc-wrap{ margin-top:10px; padding:10px 10px 12px; background:#faf7f0; border:1px dashed var(--line); border-radius:8px; }
+  .rug-svc-wrap .rdg-label{ font-weight:600; color:var(--ink); font-size:11.5px; margin-bottom:8px; }
+  .rug-svc-grid{ display:flex; flex-direction:column; gap:5px; }
   .rug-svc-item{
-    display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; color:var(--ink);
-    border:1px solid var(--line); border-radius:6px; padding:5px 8px; background:#fff; cursor:pointer;
+    display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:500; color:var(--ink);
+    border:1px solid var(--line); border-radius:6px; padding:7px 10px; background:#fff; cursor:pointer;
+    line-height:1.25; white-space:nowrap;
   }
-  .rug-svc-item input{ margin:0; }
+  .rug-svc-item input[type="checkbox"]{
+    -webkit-appearance:auto; appearance:auto;
+    width:15px; height:15px; min-width:15px; flex:0 0 auto;
+    margin:0; padding:0; accent-color:var(--indigo);
+  }
+  .rug-svc-item span{ overflow:hidden; text-overflow:ellipsis; }
   .rug-svc-item:hover{ border-color:#c9bfa8; }
-  .rug-svc-item.checked{ border-color:var(--indigo); background:var(--indigo-100); }
-  .rug-pad-sub, .rug-misc-sub{ align-items:center; gap:8px; margin-top:8px; }
-  .rug-pad-sub label, .rug-misc-sub label{ font-size:12px; font-weight:600; flex:0 0 auto; }
-  .rug-pad-sub select, .rug-misc-sub input{ flex:1 1 auto; min-width:0; }
+  .rug-svc-item.checked{ border-color:var(--indigo); background:var(--indigo-100); font-weight:600; }
+  .rug-pad-sub, .rug-misc-sub{ display:flex; flex-direction:column; gap:5px; margin-top:9px; }
+  .rug-pad-sub label, .rug-misc-sub label{ font-size:11.5px; font-weight:600; }
+  .rug-pad-sub select, .rug-misc-sub input{ width:100%; box-sizing:border-box; font-size:13px; padding:8px 10px; }
   .print-rug-diagram{ width:100px; height:auto; flex:0 0 auto; }
   .print-rug-flex{ display:flex; gap:10px; align-items:flex-start; }
   .print-rug-flex .prf-text{ flex:1 1 auto; }
@@ -404,8 +411,8 @@
 
   /* ---------- Alert flags ---------- */
   .flag{ display:inline-block; padding:2px 7px; border-radius:5px; font-size:11px; font-weight:700; letter-spacing:.02em; white-space:nowrap; margin-left:6px; }
-  .flag.stalled{ background:#f1e2e3; color:#84353c; }
-  .flag.due{ background:#f7ead0; color:#8a641b; }
+  .flag.stalled{ background:#f7dcc0; color:#8a4611; }
+  .flag.due{ background:#fbeeb4; color:#7a5c0f; }
   .flag.overdue{ background:#7e2b34; color:#fff; }
   .order-row .flags{ display:flex; gap:4px; flex-wrap:wrap; margin-top:3px; }
 
@@ -420,6 +427,10 @@
   .alert-block p.desc{ color:var(--ink-soft); font-size:13px; margin:0 0 16px; }
   .alert-block.pastdue{ background:#fbebea; border:1.5px solid var(--madder); }
   .alert-block.pastdue h3{ color:var(--madder-700); }
+  .alert-block.stalledbox{ background:#fdece0; border:1.5px solid #b5651d; }
+  .alert-block.stalledbox h3{ color:#8a4611; }
+  .alert-block.duesoon{ background:#fdf6d9; border:1.5px solid #a97e15; }
+  .alert-block.duesoon h3{ color:#7a5c0f; }
   .alert-row{
     display:grid; grid-template-columns:96px 1fr auto; gap:14px; align-items:center;
     background:var(--white); border:1px solid var(--line); border-radius:10px;
@@ -442,30 +453,30 @@
     @page{ margin:9mm; }
     #app{ display:none !important; }
     #print-root{ display:block !important; }
-    body{ background:#fff; font-size:12px; }
+    body{ background:#fff; font-size:13px; }
     .print-doc{ color:#000; font-family:var(--display); }
     .guard{ height:5px; background:
       repeating-linear-gradient(45deg,#7e2b34 0,#7e2b34 5px,#fff 5px,#fff 10px);
       border-top:1.5px solid #7e2b34; border-bottom:1.5px solid #7e2b34; }
     .print-letterhead{ text-align:center; padding:3px 0 4px; }
     .print-letterhead img{ max-width:105px; height:auto; margin:0 auto 2px; display:block; }
-    .print-letterhead .contact{ font-family:var(--body); font-size:9.5px; color:#333; margin-top:1px; }
+    .print-letterhead .contact{ font-family:var(--body); font-size:10.5px; color:#333; margin-top:1px; }
     .print-title{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid #000; padding-bottom:4px; margin:10px 0 9px; }
-    .print-title h2{ font-size:14.5px; margin:0; }
-    .print-title .pnum{ font-family:var(--mono); font-size:11.5px; }
-    .print-cols{ display:grid; grid-template-columns:1fr 1fr; gap:18px; font-family:var(--body); font-size:10.5px; }
-    .print-cols h3{ font-family:var(--body); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 5px; }
+    .print-title h2{ font-size:15.5px; margin:0; }
+    .print-title .pnum{ font-family:var(--mono); font-size:12.5px; }
+    .print-cols{ display:grid; grid-template-columns:1fr 1fr; gap:18px; font-family:var(--body); font-size:11.5px; }
+    .print-cols h3{ font-family:var(--body); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 5px; }
     .print-cols .pline{ display:flex; justify-content:space-between; padding:1.5px 0; }
     .print-cols .pline .pl{ color:#555; }
-    .print-notes{ font-family:var(--body); font-size:10.5px; margin-top:8px; }
-    .print-notes h3{ font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 3px; }
+    .print-notes{ font-family:var(--body); font-size:11.5px; margin-top:8px; }
+    .print-notes h3{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 3px; }
     .print-money{ font-family:var(--body); margin-top:9px; border:1px solid #000; }
-    .print-money .pline{ display:flex; justify-content:space-between; padding:4px 10px; font-size:10.5px; border-bottom:1px solid #ccc; }
-    .print-money .pline:last-child{ border-bottom:0; font-weight:700; font-size:12px; background:#f2f2f2; }
-    .print-disclaimer{ font-family:var(--body); font-size:8px; font-style:italic; color:#555; margin-top:6px; line-height:1.25; }
-    .print-sign{ display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:20px; font-family:var(--body); font-size:9.5px; }
+    .print-money .pline{ display:flex; justify-content:space-between; padding:4px 10px; font-size:11.5px; border-bottom:1px solid #ccc; }
+    .print-money .pline:last-child{ border-bottom:0; font-weight:700; font-size:13px; background:#f2f2f2; }
+    .print-disclaimer{ font-family:var(--body); font-size:9px; font-style:italic; color:#555; margin-top:6px; line-height:1.25; }
+    .print-sign{ display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:20px; font-family:var(--body); font-size:10.5px; }
     .print-sign .sig{ border-top:1px solid #000; padding-top:3px; color:#444; }
-    .print-foot{ text-align:center; font-family:var(--body); font-size:8.5px; color:#777; margin-top:12px; border-top:1px solid #ccc; padding-top:5px; }
+    .print-foot{ text-align:center; font-family:var(--body); font-size:9.5px; color:#777; margin-top:12px; border-top:1px solid #ccc; padding-top:5px; }
   }
 
   @media (max-width:820px){
@@ -1199,7 +1210,7 @@
     html += '</div>';
 
     // Due soon section
-    html += '<div class="alert-block">'
+    html += '<div class="alert-block duesoon">'
       + '<h3><span class="flag due">⚑</span> Approaching promise date</h3>'
       + '<p class="desc">Open orders within '+PROMISE_BUSINESS_DAYS+' business days of the promise date on the original service order.</p>';
     if(a.dueSoon.length === 0){
@@ -1217,7 +1228,7 @@
     html += '</div>';
 
     // Stalled / never picked up section
-    html += '<div class="alert-block">'
+    html += '<div class="alert-block stalledbox">'
       + '<h3><span class="flag stalled">⚑</span> Stalled / Never Picked Up</h3>'
       + '<p class="desc">Open orders with more than '+STALLED_DAYS+' days of inactivity (no status change or edit), including items that have simply never been picked up.</p>';
     if(a.stalled.length === 0){
@@ -1605,9 +1616,7 @@
           if(tool === "point"){
             var dist = (pt && startPt) ? Math.hypot(pt.x-startPt.x, pt.y-startPt.y) : 0;
             if(dist < 6){
-              var hitIdx = hitTestMarks(marks, pt);
-              if(hitIdx >= 0) marks.splice(hitIdx, 1);
-              else marks.push({type:"point", x:pt.x, y:pt.y});
+              marks.push({type:"point", x:pt.x, y:pt.y});
             }
           } else if(tool === "line"){
             if(linePts && linePts.length > 1){
@@ -1645,6 +1654,9 @@
       var clearBtn = main.querySelector('.rug-clear-btn[data-rugidx="'+n+'"]');
       if(clearBtn) clearBtn.addEventListener("click", function(){ o.rugs[n-1].marks = []; redraw(); });
 
+      var undoBtn = main.querySelector('.rug-undo-btn[data-rugidx="'+n+'"]');
+      if(undoBtn) undoBtn.addEventListener("click", function(){ o.rugs[n-1].marks.pop(); redraw(); });
+
       // Service checkboxes for this rug — Pad reveals a pad-type dropdown, Misc reveals a
       // text field, and Pickup & Delivery unlocks the order-level fee field.
       SERVICE_DEFS.forEach(function(d){
@@ -1681,13 +1693,14 @@
       +   '<textarea id="rug'+n+'_desc" placeholder="e.g. 9x12 Persian Tabriz, wine stain in center">'+esc(r.description)+'</textarea></div>'
       + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 9×12"})
       + '<div class="rug-diagram-wrap">'
-      +   '<div class="rdg-label">Mark a spot, draw a line, or draw a box — add as many as you need. Click an existing mark with the ✕ tool to remove just that one, or use Clear marks to wipe them all.</div>'
+      +   '<div class="rdg-label">Mark a spot, draw a line, or draw a box — add as many as you need, even on top of each other. Use Undo to remove just the last mark, or Clear marks to wipe them all.</div>'
       +   '<div class="rdg-tools">'
       +     '<button type="button" class="rdg-tool active" data-rugidx="'+n+'" data-tool="point" title="Mark a spot">✕ Mark</button>'
       +     '<button type="button" class="rdg-tool" data-rugidx="'+n+'" data-tool="line" title="Click and drag to draw a line">╱ Line</button>'
       +     '<button type="button" class="rdg-tool" data-rugidx="'+n+'" data-tool="box" title="Click and drag to draw a box">▭ Box</button>'
       +   '</div>'
       +   '<div class="rug-diagram-canvas" data-rugidx="'+n+'">'+rugDiagramSVG(r.marks||[])+'</div>'
+      +   '<button type="button" class="btn ghost rug-undo-btn" data-rugidx="'+n+'" style="margin-right:6px">↩ Undo</button>'
       +   '<button type="button" class="btn ghost rug-clear-btn" data-rugidx="'+n+'">Clear marks</button>'
       + '</div>'
       + '<div class="rug-svc-wrap">'
