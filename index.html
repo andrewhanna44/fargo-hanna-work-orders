@@ -516,6 +516,7 @@
     <button class="nav-btn" data-nav="list"><span class="ico">▦</span> Service Orders</button>
     <button class="nav-btn" data-nav="customers"><span class="ico">☺</span> Customers</button>
     <button class="nav-btn" data-nav="alerts"><span class="ico">⚑</span> Alerts <span class="nav-count" id="navCount" style="display:none">0</span></button>
+    <button class="nav-btn" data-nav="servicesMenu"><span class="ico">⚙</span> Services Menu</button>
     <button class="nav-btn" data-nav="settings"><span class="ico">⚙</span> Backup &amp; settings</button>
     <div class="nav-spacer"></div>
     <button class="logout-btn" id="logoutBtn"><span class="ico">⎋</span> Log out</button>
@@ -590,6 +591,9 @@
       o.taxEnabled = false;
     }
     if(o.taxEnabled === undefined) o.taxEnabled = true;
+    if(o.cleaningFee === undefined || o.cleaningFee === null || o.cleaningFee === "") o.cleaningFee = 0;
+    if(o.otherFee === undefined || o.otherFee === null || o.otherFee === "") o.otherFee = 0;
+    if(o.discountPct === undefined || o.discountPct === null || o.discountPct === "") o.discountPct = 0;
     return o;
   }
 
@@ -743,17 +747,25 @@
     }
     if(state.view === "settings") renderSettings();
   }
+  // Default price list — Cleaning is priced per square foot (used to auto-calculate the
+  // Cleaning Fee from each rug's size). Other services are flat-fee placeholders until
+  // pricing is finalized; staff can fill them in on the Services Menu screen.
+  var DEFAULT_SERVICE_PRICES = { cleaning:3, repair:"", pad:"", pickupDelivery:"", digester:"",
+    storage:"", appraisal:"", woolGuard:"", moth:"", misc:"" };
   function loadSettings(){
     var def = {
       shopName:"Fargo Hanna Oriental Rugs",
       address:"",
       phone:"",
       email:"",
-      nextNumber:1001
+      nextNumber:1001,
+      servicePrices: Object.assign({}, DEFAULT_SERVICE_PRICES)
     };
     try {
-      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY));
-      return Object.assign(def, s || {});
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+      var merged = Object.assign({}, def, s);
+      merged.servicePrices = Object.assign({}, DEFAULT_SERVICE_PRICES, s.servicePrices || {});
+      return merged;
     } catch(e){ return def; }
   }
   function saveSettings(){
@@ -798,6 +810,32 @@
   function todayISO(){
     var d = new Date();
     return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  // Dad's shorthand rug-sizing notation: "Y.Z x Y.Z" where Y = whole feet and Z = inches
+  // (1 or 2 digits, 0-11). Examples: "8x9.9" = 8ft x 9ft9in.  "8x9.11" = 8ft x 9ft11in.
+  // A plain "8x12" (no decimal) = 8ft x 12ft, no inches.
+  function parseFeetInches(part){
+    part = String(part==null?"":part).trim();
+    var m = part.match(/^(\d{1,2})(?:\.(\d{1,2}))?$/);
+    if(!m) return null;
+    var feet = parseInt(m[1],10);
+    var inches = m[2] ? parseInt(m[2],10) : 0;
+    if(inches > 11) return null; // not a valid inches value in this notation
+    return feet + inches/12;
+  }
+  function parseRugDimensions(str){
+    if(!str) return null;
+    var parts = String(str).toLowerCase().replace(/["']/g,"").split(/x|\u00d7/).map(function(s){ return s.trim(); }).filter(Boolean);
+    if(parts.length !== 2) return null;
+    var w = parseFeetInches(parts[0]), l = parseFeetInches(parts[1]);
+    if(w==null || l==null) return null;
+    return { widthFt:w, lengthFt:l, sqft:w*l };
+  }
+  function fmtFeetInches(decFt){
+    var feet = Math.floor(decFt);
+    var inches = Math.round((decFt-feet)*12);
+    if(inches===12){ feet++; inches=0; }
+    return feet+"'"+(inches? " "+inches+'"':"");
   }
   var SERVICE_DEFS = [
     {key:"cleaning", label:"Cleaning"},
@@ -846,6 +884,12 @@
   var STATUSES = ["New","In Progress","Ready for Pickup","Picked Up"];
   var STATUS_GROUPS = STATUSES.concat(["Canceled"]); // used for bucket cards & grouped list — Canceled is reached only via the dedicated Cancel button, not the status pills
 
+  // NC sales tax rule: a retailer/manager discount reduces the taxable sale price, so tax
+  // is computed on the subtotal AFTER the discount (unlike a manufacturer coupon, which
+  // would be taxed on the pre-discount price). Discount % applies to the Subtotal, not Total.
+  function discountAmt(o){ return (Number(o.subtotal)||0) * ((Number(o.discountPct)||0)/100); }
+  function taxableAmt(o){ return Math.max(0, (Number(o.subtotal)||0) - discountAmt(o)); }
+  function taxAmt(o){ return o.taxEnabled ? taxableAmt(o)*TAX_RATE : 0; }
   function balance(o){ return (Number(o.cost)||0) - (Number(o.deposit)||0); }
 
   // Returns the rugs on an order that actually have something entered, as {n, description, dimensions, marks, services}.
@@ -1048,6 +1092,7 @@
     else if(state.view==="alerts") renderAlerts();
     else if(state.view==="customers") renderCustomers();
     else if(state.view==="settings") renderSettings();
+    else if(state.view==="servicesMenu") renderServicesMenu();
     window.scrollTo(0,0);
   }
   function go(view, id){ state.view=view; if(id!==undefined) state.selectedId=id; render(); }
@@ -1416,7 +1461,12 @@
 
     + '<fieldset class="fieldset"><legend>Cost</legend>'
     +   '<div class="grid thirds">'
-    +     moneyField("Subtotal","subtotal",o.subtotal,{req:true})
+    +     '<div class="field"><label>Cleaning fee<span class="hint">Auto-calculated from rug size</span></label><div class="money-wrap"><input id="cleaningFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     moneyField("Other services fee","otherFee",(o.otherFee?o.otherFee:"0.00"),{hint:"Repair, pad, digester, storage, appraisal, wool guard, moth, misc"})
+    +     moneyField("Pickup & delivery fee","pdFee",(o.pdFee?o.pdFee:"0.00"),{hint:"Unlocks when Pickup & delivery is checked on a rug"})
+    +   '</div>'
+    +   '<div class="grid thirds" style="margin-top:14px">'
+    +     '<div class="field"><label>Subtotal</label><div class="money-wrap"><input id="subtotalView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     '<div class="field">'
     +       '<label style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
     +         '<span>Sales tax (7.5% NC/Durham)</span>'
@@ -1427,11 +1477,14 @@
     +     '<div class="field"><label>Total</label><div class="money-wrap"><input id="totalView" value="0.00" readonly tabindex="-1" style="background:#f2efe7;font-weight:700"></div></div>'
     +   '</div>'
     +   '<div class="grid thirds" style="margin-top:14px">'
-    +     moneyField("Pickup & delivery fee","pdFee",(o.pdFee?o.pdFee:"0.00"),{hint:"Unlocks when Pickup & delivery is checked on a rug"})
-    +   '</div>'
-    +   '<div class="grid thirds" style="margin-top:14px">'
-    +     moneyField("Deposit paid","deposit",o.deposit,{})
-    +     '<div class="field"><label>Balance due</label><div class="money-wrap"><input id="balanceView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     '<div class="field"><label>Discount %<span class="hint">Manager only</span></label>'
+    +       '<div style="display:flex;gap:8px;align-items:center">'
+    +         '<input type="number" step="0.1" min="0" max="100" id="discountPct" value="'+(o.discountPct?esc(o.discountPct):"0")+'" disabled style="background:#f2efe7">'
+    +         '<button type="button" class="btn ghost sm" id="unlockDiscount" title="Manager unlock to enter a discount">\ud83d\udd12</button>'
+    +       '</div>'
+    +     '</div>'
+    +     moneyField("Prepay amount","deposit",o.deposit,{})
+    +     '<div class="field"><label>Final balance due</label><div class="money-wrap"><input id="balanceView" value="0.00" readonly tabindex="-1" style="background:#f2efe7;font-weight:700"></div></div>'
     +   '</div>'
     + '</fieldset>'
 
@@ -1465,25 +1518,75 @@
         feeEl.classList.remove("err");
         feeEl.style.background = "#f2efe7";
       }
-      recalcBalance();
+      recalcAll();
     }
-    function recalcBalance(){
-      var sub = parseFloat(main.querySelector("#subtotal").value)||0;
-      var taxOn = main.querySelector("#taxToggle").checked;
-      var tax = taxOn ? sub*TAX_RATE : 0;
+    // Sums the cleaning fee across every rug with Cleaning checked, parsing each rug's Size
+    // field with the shop's feet/inches notation, and shows a live sq-ft / fee hint under it.
+    function computeCleaningFee(){
+      var rate = Number((state.settings.servicePrices && state.settings.servicePrices.cleaning) || 0);
+      var total = 0;
+      [1,2,3,4].forEach(function(n){
+        var hintEl = main.querySelector("#rug"+n+"_sqftHint");
+        var dimEl = main.querySelector("#rug"+n+"_dim");
+        var cb = main.querySelector("#rug"+n+"_svc_cleaning");
+        if(!dimEl || !hintEl) return;
+        if(!dimEl.value){
+          hintEl.textContent = "";
+          return;
+        }
+        var dims = parseRugDimensions(dimEl.value);
+        if(!dims){
+          hintEl.style.color = "var(--madder)";
+          hintEl.textContent = (cb && cb.checked)
+            ? "Enter size as e.g. 8x9.9 so cleaning can be priced automatically"
+            : "Couldn\u2019t read this size \u2014 try e.g. 8x9.9";
+          return;
+        }
+        var fee = dims.sqft * rate;
+        hintEl.style.color = "var(--ink-soft)";
+        hintEl.textContent = "\u2248 "+dims.sqft.toFixed(1)+" sq ft"+((cb && cb.checked) ? "  \u00b7  cleaning "+money(fee) : "");
+        if(cb && cb.checked) total += fee;
+      });
+      return total;
+    }
+    function recalcAll(){
+      var cleaningFee = computeCleaningFee();
+      var otherFee = parseFloat(main.querySelector("#otherFee").value)||0;
       var feeEl = main.querySelector("#pdFee");
-      var fee = (feeEl && !feeEl.disabled) ? (parseFloat(feeEl.value)||0) : 0;
-      var total = sub + tax + fee;
+      var pdFee = (feeEl && !feeEl.disabled) ? (parseFloat(feeEl.value)||0) : 0;
+      var sub = cleaningFee + otherFee + pdFee;
+      var discountPct = Math.min(100, Math.max(0, parseFloat(main.querySelector("#discountPct").value)||0));
+      var discountAmt = sub * (discountPct/100);
+      var taxableSub = Math.max(0, sub - discountAmt);
+      var taxOn = main.querySelector("#taxToggle").checked;
+      var tax = taxOn ? taxableSub*TAX_RATE : 0;
+      var total = taxableSub + tax;
       var d = parseFloat(main.querySelector("#deposit").value)||0;
+      main.querySelector("#cleaningFeeView").value = cleaningFee.toFixed(2);
+      main.querySelector("#subtotalView").value = sub.toFixed(2);
       main.querySelector("#taxView").value = tax.toFixed(2);
       main.querySelector("#totalView").value = total.toFixed(2);
       main.querySelector("#balanceView").value = (total-d).toFixed(2);
     }
     wirePhoneInput(main.querySelector("#cust_phone"));
-    main.querySelector("#subtotal").addEventListener("input", recalcBalance);
-    main.querySelector("#taxToggle").addEventListener("change", recalcBalance);
-    main.querySelector("#deposit").addEventListener("input", recalcBalance);
-    main.querySelector("#pdFee").addEventListener("input", recalcBalance);
+    main.querySelector("#otherFee").addEventListener("input", recalcAll);
+    main.querySelector("#taxToggle").addEventListener("change", recalcAll);
+    main.querySelector("#deposit").addEventListener("input", recalcAll);
+    main.querySelector("#pdFee").addEventListener("input", recalcAll);
+    main.querySelector("#discountPct").addEventListener("input", recalcAll);
+    [1,2,3,4].forEach(function(n){
+      var dimEl = main.querySelector("#rug"+n+"_dim");
+      if(dimEl) dimEl.addEventListener("input", recalcAll);
+    });
+    var unlockDiscountBtn = main.querySelector("#unlockDiscount");
+    if(unlockDiscountBtn) unlockDiscountBtn.addEventListener("click", function(){
+      requireManagerPassword("enter a discount", function(){
+        var el = main.querySelector("#discountPct");
+        el.disabled = false;
+        el.style.background = "";
+        el.focus();
+      });
+    });
     updatePdFeeLock();
     main.querySelector("#cancelForm").addEventListener("click", function(){ go(editing?"detail":"list"); });
     main.querySelector("#cancelForm2").addEventListener("click", function(){ go(editing?"detail":"list"); });
@@ -1674,6 +1777,7 @@
             if(miscWrap) miscWrap.style.display = cb.checked ? "flex" : "none";
           }
           if(d.key === "pickupDelivery") updatePdFeeLock();
+          else recalcAll();
         });
       });
     });
@@ -1690,8 +1794,9 @@
     var svc = r.services || blankServices();
     return '<div class="rug-col"><h4>Rug #'+n+(n===1?'':' <span style="font-weight:400;color:var(--ink-soft);font-size:11.5px">(optional)</span>')+'</h4>'
       + '<div class="field"><label for="rug'+n+'_desc">Description &amp; work needed</label>'
-      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. 9x12 Persian Tabriz, wine stain in center">'+esc(r.description)+'</textarea></div>'
-      + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 9×12"})
+      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. Persian Tabriz, wine stain in center, fringe wear">'+esc(r.description)+'</textarea></div>'
+      + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 8x9.9 = 8ft × 9ft9in"})
+      + '<div class="rug-sqft-hint" id="rug'+n+'_sqftHint" style="font-size:11.5px;color:var(--ink-soft);margin:-10px 0 12px 2px;min-height:14px"></div>'
       + '<div class="rug-diagram-wrap">'
       +   '<div class="rdg-label">Mark a spot, draw a line, or draw a box — add as many as you need, even on top of each other. Use Undo to remove just the last mark, or Clear marks to wipe them all.</div>'
       +   '<div class="rdg-tools">'
@@ -1807,12 +1912,11 @@
     var errs = [];
     function mark(id, bad){ var el=main.querySelector("#"+id); if(el) el.classList.toggle("err", !!bad); }
 
-    var name=g("cust_name"), phone=g("cust_phone"), email=g("cust_email"), address=g("cust_address"), subtotal=g("subtotal");
+    var name=g("cust_name"), phone=g("cust_phone"), email=g("cust_email"), address=g("cust_address");
     mark("cust_name", !name); if(!name) errs.push("name");
     mark("cust_phone", !phone); if(!phone) errs.push("phone");
     mark("cust_email", !email); if(!email) errs.push("email");
     mark("cust_address", !address); if(!address) errs.push("address");
-    mark("subtotal", subtotal===""); if(subtotal==="") errs.push("subtotal");
 
     // Gather each rug's checked services + pad type / misc text.
     var rugServices = [1,2,3,4].map(function(n){
@@ -1839,13 +1943,25 @@
     if(pdActive && pdFeeVal <= 0){ mark("pdFee", true); errs.push("pdfee"); }
     else mark("pdFee", false);
 
+    // Every rug with Cleaning checked needs a size the auto-pricing can actually parse.
+    var cleaningSizeOk = true;
+    rugServices.forEach(function(svc, i){
+      if(!svc.cleaning) return;
+      var n = i+1;
+      var dimVal = g("rug"+n+"_dim");
+      if(!dimVal || !parseRugDimensions(dimVal)){ mark("rug"+n+"_dim", true); cleaningSizeOk = false; }
+      else mark("rug"+n+"_dim", false);
+    });
+    if(!cleaningSizeOk) errs.push("cleaningsize");
+
     if(errs.length){
       var msgParts = [];
       if(errs.indexOf("noservice")!==-1) msgParts.push("Select at least one type of work on at least one rug.");
       if(errs.indexOf("padtype")!==-1) msgParts.push("Choose a pad type wherever Pad is checked.");
       if(errs.indexOf("misctext")!==-1) msgParts.push("Describe the miscellaneous work wherever it's checked.");
       if(errs.indexOf("pdfee")!==-1) msgParts.push("Enter a pickup & delivery fee greater than $0.00.");
-      if(["name","phone","email","address","subtotal"].some(function(e){ return errs.indexOf(e)!==-1; })) msgParts.push("Fill in the highlighted fields.");
+      if(errs.indexOf("cleaningsize")!==-1) msgParts.push("Enter a valid size (e.g. 8x9.9) for every rug with Cleaning checked, so it can be priced automatically.");
+      if(["name","phone","email","address"].some(function(e){ return errs.indexOf(e)!==-1; })) msgParts.push("Fill in the highlighted fields.");
       main.querySelector("#formMsg").textContent = msgParts.join(" ");
       return;
     }
@@ -1863,12 +1979,18 @@
     o.addons = g("addons");
     o.dropoffDate = g("dropoff");
     o.readyDate = g("ready");
-    var subtotalNum = parseFloat(g("subtotal"))||0;
+    var cleaningFeeNum = computeCleaningFee();
+    var otherFeeNum = parseFloat(g("otherFee"))||0;
     var taxOn = !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked);
-    o.subtotal = subtotalNum;
-    o.taxEnabled = taxOn;
     o.pdFee = pdActive ? pdFeeVal : 0;
-    o.cost = +((subtotalNum * (taxOn ? (1+TAX_RATE) : 1) + o.pdFee).toFixed(2));
+    var subtotalNum = cleaningFeeNum + otherFeeNum + o.pdFee;
+    o.cleaningFee = +cleaningFeeNum.toFixed(2);
+    o.otherFee = +otherFeeNum.toFixed(2);
+    o.subtotal = +subtotalNum.toFixed(2);
+    o.taxEnabled = taxOn;
+    o.discountPct = Math.min(100, Math.max(0, parseFloat(g("discountPct"))||0));
+    var taxableSubNum = Math.max(0, subtotalNum - discountAmt(o));
+    o.cost = +((taxableSubNum * (taxOn ? (1+TAX_RATE) : 1)).toFixed(2));
     o.deposit = parseFloat(g("deposit"))||0;
     o.notes = g("notes");
     o.customerId = upsertCustomerFromOrder(o);
@@ -1905,7 +2027,7 @@
       ],
       addons:"",
       cancelReason:"", canceledAt:null, statusBeforeCancel:null,
-      dropoffDate:todayISO(), readyDate:"", subtotal:"", taxEnabled:true, cost:"", deposit:"", pdFee:0, notes:"" };
+      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, notes:"" };
   }
   function getOrder(id){ return state.orders.filter(function(o){return o.id===id;})[0] || null; }
 
@@ -1986,12 +2108,15 @@
                 + '<button class="cancel-link" id="btnCancel">⛔ Cancel service order</button>')
     +     '</div>'
     +     '<div class="panel money-summary"><h4>Payment</h4>'
-    +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
-    +       '<div class="line"><span>Sales tax'+(o.taxEnabled?' (7.5%)':' (not applied)')+'</span><span class="mono">'+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+'</span></div>'
+    +       '<div class="line"><span>Cleaning fee</span><span class="mono">'+money(o.cleaningFee)+'</span></div>'
+    +       (Number(o.otherFee)?'<div class="line"><span>Other services fee</span><span class="mono">'+money(o.otherFee)+'</span></div>':'')
     +       (o.pdFee?'<div class="line"><span>Pickup &amp; delivery fee</span><span class="mono">'+money(o.pdFee)+'</span></div>':'')
+    +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
+    +       '<div class="line"><span>Sales tax'+(o.taxEnabled?' (7.5%)':' (not applied)')+'</span><span class="mono">'+money(taxAmt(o))+'</span></div>'
     +       '<div class="line"><span>Total</span><span class="mono">'+money(o.cost)+'</span></div>'
-    +       '<div class="line"><span>Deposit paid</span><span class="mono">'+money(o.deposit)+'</span></div>'
-    +       '<div class="line total"><span>Balance due</span><span class="mono">'+money(balance(o))+'</span></div>'
+    +       (Number(o.discountPct)?'<div class="line"><span>Discount ('+esc(o.discountPct)+'%)</span><span class="mono">-'+money(discountAmt(o))+'</span></div>':'')
+    +       '<div class="line"><span>Prepay amount</span><span class="mono">'+money(o.deposit)+'</span></div>'
+    +       '<div class="line total"><span>Final balance due</span><span class="mono">'+money(balance(o))+'</span></div>'
     +       '<div class="price-note">'+esc(PRICE_DISCLAIMER)+'</div>'
     +     '</div>'
     +     '<div class="panel"><h4>Notify customer</h4>'
@@ -2084,12 +2209,15 @@
       (rugLines ? "RUGS & WORK\n"+rugLines+"\n\n" : "")+
       (o.addons ? "ADD-ONS\n  "+o.addons+"\n\n" : "")+
       RULE+"\n"+
-      "  Subtotal                    "+money(o.subtotal)+"\n"+
-      "  Sales tax"+(o.taxEnabled?" (7.5%)":" (n/a)")+"                "+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+"\n"+
+      "  Cleaning fee                "+money(o.cleaningFee)+"\n"+
+      (Number(o.otherFee)?"  Other services fee         "+money(o.otherFee)+"\n":"")+
       (o.pdFee?"  Pickup & delivery fee      "+money(o.pdFee)+"\n":"")+
+      "  Subtotal                    "+money(o.subtotal)+"\n"+
+      "  Sales tax"+(o.taxEnabled?" (7.5%)":" (n/a)")+"                "+money(taxAmt(o))+"\n"+
       "  Total                       "+money(o.cost)+"\n"+
-      "  Deposit paid                "+money(o.deposit)+"\n"+
-      "  Balance due at pickup       "+money(balance(o))+"\n"+
+      (Number(o.discountPct)?"  Discount ("+o.discountPct+"%)              -"+money(discountAmt(o))+"\n":"")+
+      "  Prepay amount               "+money(o.deposit)+"\n"+
+      "  Final balance due           "+money(balance(o))+"\n"+
       RULE+"\n\n"+
       PRICE_DISCLAIMER+"\n\n"+
       "We'll be in touch as soon as your rug is ready. Please keep this order number for your records.\n\n"+
@@ -2165,12 +2293,15 @@
             }).join("")
           : '<div class="print-notes"><h3>Description &amp; work to be done</h3><div>—</div></div>')
     +   '<div class="print-money">'
-    +     '<div class="pline"><span>Subtotal</span><span>'+money(o.subtotal)+'</span></div>'
-    +     '<div class="pline"><span>Sales tax'+(o.taxEnabled?' (7.5% NC)':' (not applied)')+'</span><span>'+money(o.taxEnabled?(Number(o.subtotal)||0)*TAX_RATE:0)+'</span></div>'
+    +     '<div class="pline"><span>Cleaning fee</span><span>'+money(o.cleaningFee)+'</span></div>'
+    +     (Number(o.otherFee)?'<div class="pline"><span>Other services fee</span><span>'+money(o.otherFee)+'</span></div>':'')
     +     (o.pdFee?'<div class="pline"><span>Pickup &amp; delivery fee</span><span>'+money(o.pdFee)+'</span></div>':'')
+    +     '<div class="pline"><span>Subtotal</span><span>'+money(o.subtotal)+'</span></div>'
+    +     '<div class="pline"><span>Sales tax'+(o.taxEnabled?' (7.5% NC)':' (not applied)')+'</span><span>'+money(taxAmt(o))+'</span></div>'
     +     '<div class="pline"><span>Total</span><span>'+money(o.cost)+'</span></div>'
-    +     '<div class="pline"><span>Deposit paid</span><span>'+money(o.deposit)+'</span></div>'
-    +     '<div class="pline"><span>Balance due at pickup</span><span>'+money(balance(o))+'</span></div>'
+    +     (Number(o.discountPct)?'<div class="pline"><span>Discount ('+esc(o.discountPct)+'%)</span><span>-'+money(discountAmt(o))+'</span></div>':'')
+    +     '<div class="pline"><span>Prepay amount</span><span>'+money(o.deposit)+'</span></div>'
+    +     '<div class="pline"><span>Final balance due at pickup</span><span>'+money(balance(o))+'</span></div>'
     +   '</div>'
     +   '<div class="print-disclaimer">'+esc(PRICE_DISCLAIMER)+'</div>'
     +   '<div class="print-sign"><div class="sig">Customer signature</div><div class="sig">Date</div></div>'
@@ -2190,18 +2321,18 @@
       var when = b.lastBackupAt ? new Date(b.lastBackupAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}) : "just now";
       return ''
         + '<div class="callout" style="background:#e9f1ea;border-color:#bfd9c4;color:#2f4a34">'
-        +   '<strong>Connected</strong> — backing up automatically to \u201c'+esc(b.folderName)+'\u201d. Last backup: '+esc(when)+'.'
+        +   '<strong>Connected</strong> — backing up automatically to “'+esc(b.folderName)+'”. Last backup: '+esc(when)+'.'
         + '</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn ghost" id="disconnectBackup">Disconnect</button></div>';
     }
     if(b.status === "needs-permission"){
       return ''
-        + '<div class="callout"><strong>Needs a quick reconnect.</strong> Your browser needs one click to resume writing to \u201c'+esc(b.folderName)+'\u201d.</div>'
+        + '<div class="callout"><strong>Needs a quick reconnect.</strong> Your browser needs one click to resume writing to “'+esc(b.folderName)+'”.</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn primary" id="resumeBackup">Resume automatic backup</button></div>';
     }
     if(b.status === "error"){
       return ''
-        + '<div class="callout" style="background:#faf0f1;border-color:#e3c6c9;color:#642128"><strong>Couldn\u2019t write to that folder.</strong> It may have been moved or renamed.</div>'
+        + '<div class="callout" style="background:#faf0f1;border-color:#e3c6c9;color:#642128"><strong>Couldn’t write to that folder.</strong> It may have been moved or renamed.</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn primary" id="connectBackup">Reconnect a folder</button></div>';
     }
     return '<div class="backup-actions"><button class="btn primary" id="connectBackup">Connect backup folder</button></div>';
@@ -2264,7 +2395,53 @@
     if(resumeBtn) resumeBtn.addEventListener("click", reconnectBackupPermission);
     var disconnectBtn = main.querySelector("#disconnectBackup");
     if(disconnectBtn) disconnectBtn.addEventListener("click", function(){
-      if(confirm("Disconnect automatic backup? Your existing backup files stay in the folder, but new changes won\u2019t be saved there until you reconnect.")) disconnectBackupFolder();
+      if(confirm("Disconnect automatic backup? Your existing backup files stay in the folder, but new changes won’t be saved there until you reconnect.")) disconnectBackupFolder();
+    });
+  }
+
+  function renderServicesMenu(){
+    var sp = state.settings.servicePrices || {};
+    main.innerHTML = ''
+    + '<div class="page-head"><div><h2>Services Menu</h2>'
+    +   '<div class="sub">Pricing reference the app uses to calculate charges automatically as sizing gets added for more services.</div></div></div>'
+
+    + '<div class="settings-block">'
+    +   '<h3>Service pricing</h3>'
+    +   '<p class="desc">Cleaning is priced per square foot and is calculated automatically from each rug\u2019s Size field. Other services are flat fees for now \u2014 enter them here once pricing is finalized; until then, use the Other Services Fee field on an order to charge for them manually.</p>'
+    +   '<table style="width:100%;border-collapse:collapse">'
+    +     '<thead><tr>'
+    +       '<th style="text-align:left;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)">Service</th>'
+    +       '<th style="text-align:left;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)">Price</th>'
+    +     '</tr></thead>'
+    +     '<tbody>'
+    +       SERVICE_DEFS.map(function(d){
+              var isCleaning = d.key === "cleaning";
+              var val = sp[d.key];
+              return '<tr>'
+                + '<td style="padding:10px 6px;border-bottom:1px solid var(--line-soft)">'+esc(d.label)+'</td>'
+                + '<td style="padding:10px 6px;border-bottom:1px solid var(--line-soft)">'
+                +   '<div style="display:flex;align-items:center;gap:10px">'
+                +     '<div class="money-wrap" style="max-width:150px"><input type="number" step="0.01" min="0" class="svcPriceInput" data-key="'+d.key+'" value="'+(val!==""&&val!=null?esc(val):"")+'" placeholder="0.00"></div>'
+                +     '<span style="font-size:12px;color:var(--ink-soft)">'+(isCleaning?"per sq ft \u2014 auto-calculated from rug size":"flat fee")+'</span>'
+                +   '</div>'
+                + '</td>'
+                + '</tr>';
+            }).join("")
+    +     '</tbody>'
+    +   '</table>'
+    +   '<div style="margin-top:16px"><button class="btn primary" id="saveSvcPrices">Save pricing</button></div>'
+    +   '<div class="callout"><strong>How this is used:</strong> When Cleaning is checked on a rug, its price is calculated automatically from the rug\u2019s Size field (using the shop\u2019s feet/inches sizing notation, e.g. 8x9.9 = 8ft \u00d7 9ft9in) times the per-square-foot rate above. Other services still use the Other Services Fee field on an order until their pricing is added here.</div>'
+    + '</div>';
+
+    main.querySelector("#saveSvcPrices").addEventListener("click", function(){
+      var newPrices = {};
+      main.querySelectorAll(".svcPriceInput").forEach(function(inp){
+        var v = inp.value.trim();
+        newPrices[inp.dataset.key] = v===""? "" : (parseFloat(v)||0);
+      });
+      state.settings.servicePrices = Object.assign({}, state.settings.servicePrices, newPrices);
+      saveSettings();
+      toast("Service pricing saved");
     });
   }
 
@@ -2286,21 +2463,22 @@
     toast("Backup downloaded — save it to OneDrive");
   }
   function exportCSV(){
-    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Subtotal","Tax","PD Fee","Total","Deposit","Balance"];
+    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Cleaning Fee","Other Fee","PD Fee","Subtotal","Tax","Total","Discount %","Prepay","Final Balance Due"];
     var rows = state.orders.map(function(o){
       var rugText = activeRugs(o).map(function(rr){
         return "Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+": "+(rr.description||"");
       }).join(" | ");
-      var taxAmt = o.taxEnabled ? (Number(o.subtotal)||0)*TAX_RATE : 0;
+      var taxAmtVal = taxAmt(o);
       return [o.number,o.status,orderServiceSummary(o),o.customer.name,fmtPhoneDisplay(o.customer.phone),o.customer.email,
         rugText.replace(/\s+/g," "),o.dropoffDate,o.readyDate,
-        (Number(o.subtotal)||0).toFixed(2), taxAmt.toFixed(2), (Number(o.pdFee)||0).toFixed(2),
-        (Number(o.cost)||0).toFixed(2),(Number(o.deposit)||0).toFixed(2),balance(o).toFixed(2)];
+        (Number(o.cleaningFee)||0).toFixed(2), (Number(o.otherFee)||0).toFixed(2), (Number(o.pdFee)||0).toFixed(2),
+        (Number(o.subtotal)||0).toFixed(2), taxAmtVal.toFixed(2),
+        (Number(o.cost)||0).toFixed(2), (Number(o.discountPct)||0).toFixed(1), (Number(o.deposit)||0).toFixed(2), balance(o).toFixed(2)];
     });
     var csv = [head].concat(rows).map(function(r){
       return r.map(function(c){ var v=String(c==null?"":c); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(",");
     }).join("\r\n");
-    download("fargo-hanna-orders-"+stamp()+".csv", "\ufeff"+csv, "text/csv");
+    download("fargo-hanna-orders-"+stamp()+".csv", "﻿"+csv, "text/csv");
     toast("CSV exported");
   }
   function importJSON(e){
