@@ -443,6 +443,17 @@
   .alert-row .who small{ display:block; font-weight:400; color:var(--ink-soft); font-size:12px; margin-top:1px; }
   .alert-row .meta{ text-align:right; font-size:12.5px; color:var(--ink-soft); }
 
+  /* ---------- Scheduled pickups & deliveries ---------- */
+  .pd-row{
+    background:var(--white); border:1px solid var(--line); border-radius:10px;
+    padding:11px 14px; margin-bottom:8px; cursor:pointer;
+    transition:border-color .12s, box-shadow .12s;
+  }
+  .pd-row:hover{ border-color:#c9bfa8; box-shadow:0 2px 10px rgba(33,30,26,.07); }
+  .pd-row .num{ font-family:var(--mono); font-size:12.5px; color:var(--indigo); font-weight:600; margin-right:8px; }
+  .pd-row .who{ font-weight:600; }
+  .pd-row-meta{ font-size:12.5px; color:var(--ink-soft); margin-top:3px; }
+
   /* ---------- Price disclaimer ---------- */
   .price-note{ font-size:12px; color:var(--ink-soft); font-style:italic; line-height:1.45; margin-top:10px; padding-top:10px; border-top:1px dotted var(--line-soft); }
 
@@ -516,6 +527,7 @@
     <button class="nav-btn" data-nav="list"><span class="ico">▦</span> Service Orders</button>
     <button class="nav-btn" data-nav="customers"><span class="ico">☺</span> Customers</button>
     <button class="nav-btn" data-nav="alerts"><span class="ico">⚑</span> Alerts <span class="nav-count" id="navCount" style="display:none">0</span></button>
+    <button class="nav-btn" data-nav="pickupsDeliveries"><span class="ico">🚚</span> Pickups &amp; Deliveries</button>
     <button class="nav-btn" data-nav="servicesMenu"><span class="ico">⚙</span> Services Menu</button>
     <button class="nav-btn" data-nav="settings"><span class="ico">⚙</span> Backup &amp; settings</button>
     <div class="nav-spacer"></div>
@@ -554,7 +566,22 @@
   var ORDERS_KEY = "FH_WORKORDERS_v1";
   var SETTINGS_KEY = "FH_SETTINGS_v1";
   var CUSTOMERS_KEY = "FH_CUSTOMERS_v1";
+  var DRAFT_KEY = "FH_DRAFT_v1";
   var storageOK = true;
+  // A single in-progress-order draft, saved without ever creating/updating a real service
+  // order. editingId is null for a brand-new order, or the order id when editing.
+  function loadDraft(){
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch(e){ return null; }
+  }
+  function saveDraftObj(draft){
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch(e){}
+  }
+  function clearDraft(){
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  }
+  // Bridge so the sidebar nav (wired once, outside renderForm's scope) can silently save
+  // whatever New/Edit form is currently open before navigating away from it.
+  var currentFormDraftSaver = null;
 
   // Old orders had a single `item` object. Migrate to a `rugs` array (up to 4) + a top-level `addons` field.
   function blankServices(){
@@ -594,6 +621,7 @@
     if(o.cleaningFee === undefined || o.cleaningFee === null || o.cleaningFee === "") o.cleaningFee = 0;
     if(o.otherFee === undefined || o.otherFee === null || o.otherFee === "") o.otherFee = 0;
     if(o.discountPct === undefined || o.discountPct === null || o.discountPct === "") o.discountPct = 0;
+    if(o.deliveryDateTime === undefined || o.deliveryDateTime === null) o.deliveryDateTime = "";
     return o;
   }
 
@@ -620,6 +648,21 @@
   function saveCustomers(){
     try { localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(state.customers)); }
     catch(e){ toast("Couldn't save customer — see Backup notes"); }
+    if(state.backup && state.backup.status === "connected"){
+      writeBackupNow().catch(function(){});
+    }
+  }
+
+  // Call-ahead pickup appointments — scheduled before any Service Order exists yet
+  // (the order itself gets created once the rug is actually picked up).
+  var PICKUP_APPTS_KEY = "FH_PICKUP_APPTS_v1";
+  function loadPickupAppts(){
+    try { return JSON.parse(localStorage.getItem(PICKUP_APPTS_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function savePickupAppts(){
+    try { localStorage.setItem(PICKUP_APPTS_KEY, JSON.stringify(state.pickupAppts)); }
+    catch(e){ toast("Couldn't save that pickup appointment"); }
     if(state.backup && state.backup.status === "connected"){
       writeBackupNow().catch(function(){});
     }
@@ -723,7 +766,7 @@
 
   function backupPayload(){
     return JSON.stringify({ app:"Fargo Hanna Service Orders", version:1, exportedAt:new Date().toISOString(),
-      settings:state.settings, orders:state.orders }, null, 2);
+      settings:state.settings, orders:state.orders, pickupAppts:state.pickupAppts }, null, 2);
   }
   async function writeFileToBackupDir(filename, contents){
     try {
@@ -747,9 +790,6 @@
     }
     if(state.view === "settings") renderSettings();
   }
-  // Default price list — Cleaning is priced per square foot (used to auto-calculate the
-  // Cleaning Fee from each rug's size). Other services are flat-fee placeholders until
-  // pricing is finalized; staff can fill them in on the Services Menu screen.
   var DEFAULT_SERVICE_PRICES = { cleaning:3, repair:"", pad:"", pickupDelivery:"", digester:"",
     storage:"", appraisal:"", woolGuard:"", moth:"", misc:"" };
   function loadSettings(){
@@ -776,11 +816,13 @@
     view: "list",
     selectedId: null,
     editingId: null,
+    draftApplied: false,
     search: "",
     filterStatus: "all",
     filterType: "all",
     orders: loadOrders(),
     customers: loadCustomers(),
+    pickupAppts: loadPickupAppts(),
     custSearch: "",
     custFormId: null,   // null = list only, "new" = add form, or a customer id = edit form
     settings: loadSettings(),
@@ -807,6 +849,13 @@
     var d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
     return d.toLocaleDateString("en-US",{month:"short", day:"numeric", year:"numeric"});
   }
+  // Formats a <input type="datetime-local"> value (e.g. "2026-07-20T14:30") for display.
+  function fmtDateTime(dtLocal){
+    if(!dtLocal) return "—";
+    var d = new Date(dtLocal);
+    if(isNaN(d.getTime())) return dtLocal;
+    return d.toLocaleString("en-US",{month:"short", day:"numeric", year:"numeric", hour:"numeric", minute:"2-digit"});
+  }
   function todayISO(){
     var d = new Date();
     return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -820,7 +869,7 @@
     if(!m) return null;
     var feet = parseInt(m[1],10);
     var inches = m[2] ? parseInt(m[2],10) : 0;
-    if(inches > 11) return null; // not a valid inches value in this notation
+    if(inches > 11) return null;
     return feet + inches/12;
   }
   function parseRugDimensions(str){
@@ -836,6 +885,40 @@
     var inches = Math.round((decFt-feet)*12);
     if(inches===12){ feet++; inches=0; }
     return feet+"'"+(inches? " "+inches+'"':"");
+  }
+  // Top-level (not nested in renderForm) so both the live form recalc AND submitForm() can
+  // call it — sums the cleaning fee across every rug with Cleaning checked, reading each
+  // rug's Size field straight from the currently-rendered form, and updates the live sq-ft hint.
+  function computeCleaningFee(){
+    var rate = Number((state.settings.servicePrices && state.settings.servicePrices.cleaning) || 0);
+    var total = 0;
+    [1,2,3,4].forEach(function(n){
+      var hintEl = main.querySelector("#rug"+n+"_sqftHint");
+      var dimEl = main.querySelector("#rug"+n+"_dim");
+      var cb = main.querySelector("#rug"+n+"_svc_cleaning");
+      if(!dimEl) return;
+      if(!dimEl.value){
+        if(hintEl) hintEl.textContent = "";
+        return;
+      }
+      var dims = parseRugDimensions(dimEl.value);
+      if(!dims){
+        if(hintEl){
+          hintEl.style.color = "var(--madder)";
+          hintEl.textContent = (cb && cb.checked)
+            ? "Enter size as e.g. 8x9.9 so cleaning can be priced automatically"
+            : "Couldn\u2019t read this size \u2014 try e.g. 8x9.9";
+        }
+        return;
+      }
+      var fee = dims.sqft * rate;
+      if(hintEl){
+        hintEl.style.color = "var(--ink-soft)";
+        hintEl.textContent = "\u2248 "+dims.sqft.toFixed(1)+" sq ft"+((cb && cb.checked) ? "  \u00b7  cleaning "+money(fee) : "");
+      }
+      if(cb && cb.checked) total += fee;
+    });
+    return total;
   }
   var SERVICE_DEFS = [
     {key:"cleaning", label:"Cleaning"},
@@ -886,7 +969,7 @@
 
   // NC sales tax rule: a retailer/manager discount reduces the taxable sale price, so tax
   // is computed on the subtotal AFTER the discount (unlike a manufacturer coupon, which
-  // would be taxed on the pre-discount price). Discount % applies to the Subtotal, not Total.
+  // would be taxed on the pre-discount price). Discount % applies to the Subtotal.
   function discountAmt(o){ return (Number(o.subtotal)||0) * ((Number(o.discountPct)||0)/100); }
   function taxableAmt(o){ return Math.max(0, (Number(o.subtotal)||0) - discountAmt(o)); }
   function taxAmt(o){ return o.taxEnabled ? taxableAmt(o)*TAX_RATE : 0; }
@@ -1083,6 +1166,7 @@
   var main = document.getElementById("main");
   function render(){
     updateNavCount();
+    if(state.view!=="new" && state.view!=="edit") currentFormDraftSaver = null;
     document.querySelectorAll(".nav-btn").forEach(function(b){
       b.classList.toggle("active", b.dataset.nav === (state.view==="detail"||state.view==="edit" ? "list" : state.view));
     });
@@ -1093,6 +1177,7 @@
     else if(state.view==="customers") renderCustomers();
     else if(state.view==="settings") renderSettings();
     else if(state.view==="servicesMenu") renderServicesMenu();
+    else if(state.view==="pickupsDeliveries") renderPickupsDeliveries();
     window.scrollTo(0,0);
   }
   function go(view, id){ state.view=view; if(id!==undefined) state.selectedId=id; render(); }
@@ -1420,10 +1505,36 @@
     var o = editing ? getOrder(state.selectedId) : blankOrder();
     if(editing && !o){ go("list"); return; }
 
+    // A draft "matches" this form when it's a new-order draft on the New form, or an
+    // edit-in-progress draft for the exact order currently being edited.
+    var pendingDraft = loadDraft();
+    var draftMatch = !!(pendingDraft && ((editing && pendingDraft.editingId===state.selectedId) || (!editing && pendingDraft.editingId===null)));
+    if(draftMatch && state.draftApplied){
+      state.draftApplied = false;
+      var dd = pendingDraft.data;
+      o.customer = dd.customer;
+      o.rugs = dd.rugs;
+      o.addons = dd.addons;
+      o.dropoffDate = dd.dropoffDate || todayISO();
+      o.readyDate = dd.readyDate;
+      o.otherFee = dd.otherFee;
+      o.pdFee = dd.pdFee;
+      o.taxEnabled = dd.taxEnabled;
+      o.discountPct = dd.discountPct;
+      o.deposit = dd.deposit;
+      o.notes = dd.notes;
+      draftMatch = false; // already loaded in — don't also show the resume banner
+    }
+
     main.innerHTML = ''
     + '<div class="page-head"><div><h2>'+(editing?"Edit service order":"New Service Order")+'</h2>'
     +   '<div class="sub">'+(editing?esc(o.number):"A number will be assigned when you save")+'</div></div>'
     +   '<button class="btn ghost" id="cancelForm">Cancel</button></div>'
+    + (draftMatch
+        ? '<div class="callout" style="margin-bottom:18px"><strong>Unsaved draft found</strong> \u2014 saved '+esc(new Date(pendingDraft.savedAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}))+'. Resume where you left off, or discard it and start from the current data.'
+          + '<div style="margin-top:10px"><button type="button" class="btn primary sm" id="resumeDraftBtn" style="margin-right:8px">Resume draft</button><button type="button" class="btn ghost sm" id="discardDraftBtn">Discard draft</button></div>'
+          + '</div>'
+        : '')
     + '<form class="wo-form" id="woForm" novalidate>'
 
     + '<fieldset class="fieldset"><legend>Customer</legend>'
@@ -1456,6 +1567,10 @@
     +   '<div class="grid">'
     +     field("Drop-off date","dropoff",o.dropoffDate||todayISO(),{type:"date"})
     +     field("Expected ready date","ready",o.readyDate,{type:"date",hint:"The window you quote the customer"})
+    +   '</div>'
+    +   '<div class="field full" id="deliveryDateWrap" style="margin-top:16px">'
+    +     '<label for="deliveryDateTime">Delivery date &amp; time<span class="hint">Unlocks when Pickup &amp; delivery is checked on a rug</span></label>'
+    +     '<input type="datetime-local" id="deliveryDateTime" value="'+esc(o.deliveryDateTime||"")+'" disabled style="background:#f2efe7">'
     +   '</div>'
     + '</fieldset>'
 
@@ -1494,6 +1609,7 @@
 
     + '<div class="form-actions">'
     +   '<span class="form-msg" id="formMsg"></span>'
+    +   '<button type="button" class="btn ghost" id="saveDraftBtn2">Save draft</button>'
     +   '<button type="button" class="btn ghost" id="cancelForm2">Cancel</button>'
     +   '<button type="submit" class="btn primary">'+(editing?"Save changes":"Create Service Order")+'</button>'
     + '</div>'
@@ -1508,46 +1624,30 @@
     }
     function updatePdFeeLock(){
       var feeEl = main.querySelector("#pdFee");
-      if(!feeEl) return;
-      if(pdFeeActive()){
-        feeEl.disabled = false;
-        feeEl.style.background = "";
-      } else {
-        feeEl.disabled = true;
-        feeEl.value = "0.00";
-        feeEl.classList.remove("err");
-        feeEl.style.background = "#f2efe7";
+      var active = pdFeeActive();
+      if(feeEl){
+        if(active){
+          feeEl.disabled = false;
+          feeEl.style.background = "";
+        } else {
+          feeEl.disabled = true;
+          feeEl.value = "0.00";
+          feeEl.classList.remove("err");
+          feeEl.style.background = "#f2efe7";
+        }
+      }
+      var delEl = main.querySelector("#deliveryDateTime");
+      if(delEl){
+        if(active){
+          delEl.disabled = false;
+          delEl.style.background = "";
+        } else {
+          delEl.disabled = true;
+          delEl.value = "";
+          delEl.style.background = "#f2efe7";
+        }
       }
       recalcAll();
-    }
-    // Sums the cleaning fee across every rug with Cleaning checked, parsing each rug's Size
-    // field with the shop's feet/inches notation, and shows a live sq-ft / fee hint under it.
-    function computeCleaningFee(){
-      var rate = Number((state.settings.servicePrices && state.settings.servicePrices.cleaning) || 0);
-      var total = 0;
-      [1,2,3,4].forEach(function(n){
-        var hintEl = main.querySelector("#rug"+n+"_sqftHint");
-        var dimEl = main.querySelector("#rug"+n+"_dim");
-        var cb = main.querySelector("#rug"+n+"_svc_cleaning");
-        if(!dimEl || !hintEl) return;
-        if(!dimEl.value){
-          hintEl.textContent = "";
-          return;
-        }
-        var dims = parseRugDimensions(dimEl.value);
-        if(!dims){
-          hintEl.style.color = "var(--madder)";
-          hintEl.textContent = (cb && cb.checked)
-            ? "Enter size as e.g. 8x9.9 so cleaning can be priced automatically"
-            : "Couldn\u2019t read this size \u2014 try e.g. 8x9.9";
-          return;
-        }
-        var fee = dims.sqft * rate;
-        hintEl.style.color = "var(--ink-soft)";
-        hintEl.textContent = "\u2248 "+dims.sqft.toFixed(1)+" sq ft"+((cb && cb.checked) ? "  \u00b7  cleaning "+money(fee) : "");
-        if(cb && cb.checked) total += fee;
-      });
-      return total;
     }
     function recalcAll(){
       var cleaningFee = computeCleaningFee();
@@ -1781,6 +1881,69 @@
         });
       });
     });
+
+    // ---- Draft save (does NOT create or update a real service order) ----
+    function gatherDraftFromForm(){
+      var g2 = function(id){ var el=main.querySelector("#"+id); return el?el.value.trim():""; };
+      var rugsSnap = [1,2,3,4].map(function(n){
+        var svc = blankServices();
+        SERVICE_DEFS.forEach(function(d){
+          var cb = main.querySelector("#rug"+n+"_svc_"+d.key);
+          svc[d.key] = !!(cb && cb.checked);
+        });
+        svc.padType = g2("rug"+n+"_padType");
+        svc.miscText = g2("rug"+n+"_miscText");
+        return {
+          description: g2("rug"+n+"_desc"),
+          dimensions: g2("rug"+n+"_dim"),
+          marks: (o.rugs[n-1] && o.rugs[n-1].marks) || [],
+          services: svc
+        };
+      });
+      return {
+        customer: { name:g2("cust_name"), phone:g2("cust_phone"), email:g2("cust_email"), address:g2("cust_address") },
+        rugs: rugsSnap,
+        addons: g2("addons"),
+        dropoffDate: g2("dropoff"),
+        readyDate: g2("ready"),
+        otherFee: g2("otherFee"),
+        pdFee: g2("pdFee"),
+        taxEnabled: !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked),
+        discountPct: g2("discountPct"),
+        deposit: g2("deposit"),
+        notes: g2("notes")
+      };
+    }
+    function isDraftEmpty(d){
+      var anyRug = d.rugs.some(function(r){
+        return (r.description && r.description.trim()) || (r.dimensions && r.dimensions.trim())
+          || (r.marks && r.marks.length) || SERVICE_DEFS.some(function(sd){ return r.services[sd.key]; });
+      });
+      return !(d.customer.name || d.customer.phone || d.customer.email || d.customer.address
+        || anyRug || d.addons || d.notes);
+    }
+    function saveDraftNow(silent){
+      var snap = gatherDraftFromForm();
+      if(isDraftEmpty(snap)){ if(!silent) toast("Nothing to save yet"); return; }
+      saveDraftObj({ editingId: editing ? state.selectedId : null, savedAt: new Date().toISOString(), data: snap });
+      if(!silent) toast("Draft saved \u2014 not submitted yet");
+    }
+    var saveDraftBtn = main.querySelector("#saveDraftBtn2");
+    if(saveDraftBtn) saveDraftBtn.addEventListener("click", function(){ saveDraftNow(false); });
+    var resumeDraftBtn = main.querySelector("#resumeDraftBtn");
+    if(resumeDraftBtn) resumeDraftBtn.addEventListener("click", function(){
+      state.draftApplied = true;
+      go(editing?"edit":"new", editing?state.selectedId:undefined);
+    });
+    var discardDraftBtn = main.querySelector("#discardDraftBtn");
+    if(discardDraftBtn) discardDraftBtn.addEventListener("click", function(){
+      clearDraft();
+      toast("Draft discarded");
+      go(editing?"edit":"new", editing?state.selectedId:undefined);
+    });
+    // Lets the sidebar nav (and a browser refresh/close) silently save this form's
+    // in-progress work as a draft before leaving — never submits the order.
+    currentFormDraftSaver = function(){ saveDraftNow(true); };
   }
 
   // A single "Cleaning" / "Pad" / etc checkbox row inside a rug's service grid.
@@ -1811,17 +1974,26 @@
       + '<div class="rug-svc-wrap">'
       +   '<div class="rdg-label">Type of work for this rug</div>'
       +   '<div class="rug-svc-grid">'
-      +     SERVICE_DEFS.map(function(d){ return svcCheckbox(n, d.key, d.label, !!svc[d.key]); }).join("")
-      +   '</div>'
-      +   '<div class="rug-pad-sub" id="rug'+n+'_padWrap" style="display:'+(svc.pad?"flex":"none")+'">'
-      +     '<label for="rug'+n+'_padType">Pad type</label>'
-      +     '<select id="rug'+n+'_padType"><option value="">Select pad type…</option>'
-      +       ["Durahold","Cushion Air","Nomuv"].map(function(opt){ return '<option value="'+opt+'"'+(svc.padType===opt?" selected":"")+'>'+opt+'</option>'; }).join("")
-      +     '</select>'
-      +   '</div>'
-      +   '<div class="rug-misc-sub" id="rug'+n+'_miscWrap" style="display:'+(svc.misc?"flex":"none")+'">'
-      +     '<label for="rug'+n+'_miscText">Describe miscellaneous work</label>'
-      +     '<input type="text" id="rug'+n+'_miscText" value="'+esc(svc.miscText||"")+'" placeholder="Briefly describe…">'
+      +     SERVICE_DEFS.map(function(d){
+              var row = svcCheckbox(n, d.key, d.label, !!svc[d.key]);
+              // Each item's dropdown/detail field lives immediately under that item,
+              // not tacked on at the end of the whole checklist.
+              if(d.key === "pad"){
+                row += '<div class="rug-pad-sub" id="rug'+n+'_padWrap" style="display:'+(svc.pad?"flex":"none")+'">'
+                  +   '<label for="rug'+n+'_padType">Pad type</label>'
+                  +   '<select id="rug'+n+'_padType"><option value="">Select pad type…</option>'
+                  +     ["Durahold","Cushion Air","Nomuv"].map(function(opt){ return '<option value="'+opt+'"'+(svc.padType===opt?" selected":"")+'>'+opt+'</option>'; }).join("")
+                  +   '</select>'
+                  + '</div>';
+              }
+              if(d.key === "misc"){
+                row += '<div class="rug-misc-sub" id="rug'+n+'_miscWrap" style="display:'+(svc.misc?"flex":"none")+'">'
+                  +   '<label for="rug'+n+'_miscText">Describe miscellaneous work</label>'
+                  +   '<input type="text" id="rug'+n+'_miscText" value="'+esc(svc.miscText||"")+'" placeholder="Briefly describe…">'
+                  + '</div>';
+              }
+              return row;
+            }).join("")
       +   '</div>'
       + '</div>'
       + '</div>';
@@ -1943,7 +2115,6 @@
     if(pdActive && pdFeeVal <= 0){ mark("pdFee", true); errs.push("pdfee"); }
     else mark("pdFee", false);
 
-    // Every rug with Cleaning checked needs a size the auto-pricing can actually parse.
     var cleaningSizeOk = true;
     rugServices.forEach(function(svc, i){
       if(!svc.cleaning) return;
@@ -1983,6 +2154,7 @@
     var otherFeeNum = parseFloat(g("otherFee"))||0;
     var taxOn = !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked);
     o.pdFee = pdActive ? pdFeeVal : 0;
+    o.deliveryDateTime = pdActive ? g("deliveryDateTime") : "";
     var subtotalNum = cleaningFeeNum + otherFeeNum + o.pdFee;
     o.cleaningFee = +cleaningFeeNum.toFixed(2);
     o.otherFee = +otherFeeNum.toFixed(2);
@@ -2005,11 +2177,13 @@
       state.orders.push(o);
       saveSettings();
       saveOrders();
+      clearDraft();
       toast("Service order "+o.number+" created");
       go("detail", o.id);
     } else {
       touch(o);
       saveOrders();
+      clearDraft();
       toast("Changes saved");
       go("detail", o.id);
     }
@@ -2027,7 +2201,7 @@
       ],
       addons:"",
       cancelReason:"", canceledAt:null, statusBeforeCancel:null,
-      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, notes:"" };
+      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, deliveryDateTime:"", notes:"" };
   }
   function getOrder(id){ return state.orders.filter(function(o){return o.id===id;})[0] || null; }
 
@@ -2107,6 +2281,12 @@
                 + '</div>'
                 + '<button class="cancel-link" id="btnCancel">⛔ Cancel service order</button>')
     +     '</div>'
+    +     (orderHasService(o,"pickupDelivery")
+            ? '<div class="panel"><h4>Delivery</h4>'
+              + '<div class="field"><label for="detailDeliveryDateTime">Delivery date &amp; time</label><input type="datetime-local" id="detailDeliveryDateTime" value="'+esc(o.deliveryDateTime||"")+'"></div>'
+              + '<button class="btn ghost sm" id="btnSaveDelivery" style="width:100%;margin-top:8px">Save delivery time</button>'
+              + '</div>'
+            : '')
     +     '<div class="panel money-summary"><h4>Payment</h4>'
     +       '<div class="line"><span>Cleaning fee</span><span class="mono">'+money(o.cleaningFee)+'</span></div>'
     +       (Number(o.otherFee)?'<div class="line"><span>Other services fee</span><span class="mono">'+money(o.otherFee)+'</span></div>':'')
@@ -2132,6 +2312,13 @@
     main.querySelector("#btnEmail").addEventListener("click", function(){ emailWorkOrder(o); });
     main.querySelector("#btnDelete").addEventListener("click", function(){ deleteOrder(o); });
     main.querySelector("#btnReady").addEventListener("click", function(){ markReady(o); });
+    var saveDeliveryBtn = main.querySelector("#btnSaveDelivery");
+    if(saveDeliveryBtn) saveDeliveryBtn.addEventListener("click", function(){
+      o.deliveryDateTime = main.querySelector("#detailDeliveryDateTime").value;
+      touch(o); saveOrders();
+      toast("Delivery time saved");
+      renderDetail();
+    });
     var cancelBtn = main.querySelector("#btnCancel");
     if(cancelBtn) cancelBtn.addEventListener("click", function(){ cancelOrder(o); });
     var reopenBtn = main.querySelector("#btnReopen");
@@ -2321,18 +2508,18 @@
       var when = b.lastBackupAt ? new Date(b.lastBackupAt).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}) : "just now";
       return ''
         + '<div class="callout" style="background:#e9f1ea;border-color:#bfd9c4;color:#2f4a34">'
-        +   '<strong>Connected</strong> — backing up automatically to “'+esc(b.folderName)+'”. Last backup: '+esc(when)+'.'
+        +   '<strong>Connected</strong> — backing up automatically to \u201c'+esc(b.folderName)+'\u201d. Last backup: '+esc(when)+'.'
         + '</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn ghost" id="disconnectBackup">Disconnect</button></div>';
     }
     if(b.status === "needs-permission"){
       return ''
-        + '<div class="callout"><strong>Needs a quick reconnect.</strong> Your browser needs one click to resume writing to “'+esc(b.folderName)+'”.</div>'
+        + '<div class="callout"><strong>Needs a quick reconnect.</strong> Your browser needs one click to resume writing to \u201c'+esc(b.folderName)+'\u201d.</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn primary" id="resumeBackup">Resume automatic backup</button></div>';
     }
     if(b.status === "error"){
       return ''
-        + '<div class="callout" style="background:#faf0f1;border-color:#e3c6c9;color:#642128"><strong>Couldn’t write to that folder.</strong> It may have been moved or renamed.</div>'
+        + '<div class="callout" style="background:#faf0f1;border-color:#e3c6c9;color:#642128"><strong>Couldn\u2019t write to that folder.</strong> It may have been moved or renamed.</div>'
         + '<div class="backup-actions" style="margin-top:12px"><button class="btn primary" id="connectBackup">Reconnect a folder</button></div>';
     }
     return '<div class="backup-actions"><button class="btn primary" id="connectBackup">Connect backup folder</button></div>';
@@ -2395,7 +2582,116 @@
     if(resumeBtn) resumeBtn.addEventListener("click", reconnectBackupPermission);
     var disconnectBtn = main.querySelector("#disconnectBackup");
     if(disconnectBtn) disconnectBtn.addEventListener("click", function(){
-      if(confirm("Disconnect automatic backup? Your existing backup files stay in the folder, but new changes won’t be saved there until you reconnect.")) disconnectBackupFolder();
+      if(confirm("Disconnect automatic backup? Your existing backup files stay in the folder, but new changes won\u2019t be saved there until you reconnect.")) disconnectBackupFolder();
+    });
+  }
+
+  function renderPickupsDeliveries(){
+    var activeOrders = state.orders.filter(function(o){ return o.status !== "Canceled" && orderHasService(o,"pickupDelivery"); });
+    var completedPickups = activeOrders.slice().sort(function(a,b){ return (b.dropoffDate||"").localeCompare(a.dropoffDate||""); });
+    var scheduledDeliveries = activeOrders.filter(function(o){ return o.deliveryDateTime && o.status !== "Picked Up"; })
+      .sort(function(a,b){ return (a.deliveryDateTime||"").localeCompare(b.deliveryDateTime||""); });
+    var completedDeliveries = activeOrders.filter(function(o){ return o.deliveryDateTime && o.status === "Picked Up"; })
+      .sort(function(a,b){ return (b.deliveryDateTime||"").localeCompare(a.deliveryDateTime||""); });
+    var scheduledPickups = (state.pickupAppts||[]).slice().sort(function(a,b){ return (a.scheduledAt||"").localeCompare(b.scheduledAt||""); });
+
+    function orderRow(o, dt){
+      return '<div class="pd-row" data-id="'+o.id+'">'
+        + '<div><span class="num">'+esc(o.number)+'</span><span class="who">'+esc(o.customer.name)+'</span></div>'
+        + '<div class="pd-row-meta">'+esc(dt)+' \u00b7 '+esc(o.status)+'</div>'
+        + '</div>';
+    }
+    function apptRow(a){
+      return '<div class="pd-row" data-apptid="'+a.id+'">'
+        + '<div><span class="who">'+esc(a.name)+'</span></div>'
+        + '<div class="pd-row-meta">'+esc(fmtDateTime(a.scheduledAt))
+        +   (a.phone?' \u00b7 '+esc(fmtPhoneDisplay(a.phone)):'')
+        +   (a.address?' \u00b7 '+esc(a.address):'')
+        +   (a.notes?' \u00b7 '+esc(a.notes):'')
+        + '</div>'
+        + '<button type="button" class="btn ghost sm pd-remove-appt" data-apptid="'+a.id+'" style="margin-top:8px">Remove</button>'
+        + '</div>';
+    }
+
+    main.innerHTML = ''
+    + '<div class="page-head"><div><h2>Scheduled Pickups &amp; Deliveries</h2>'
+    +   '<div class="sub">Every order using Pickup &amp; Delivery, plus pickups scheduled by phone before an order exists yet.</div></div>'
+    +   '<button class="btn primary" id="btnAddPickupAppt">+ Schedule a pickup</button></div>'
+
+    + '<div id="pickupApptFormWrap" style="display:none;margin-bottom:20px"></div>'
+
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">'
+    +   '<div>'
+    +     '<h3 style="font-family:var(--display);font-size:16px;color:var(--indigo);margin:0 0 12px">Pickups</h3>'
+    +     '<div class="group-head" style="margin-top:0">Completed <span class="gc">'+completedPickups.length+'</span></div>'
+    +     (completedPickups.length ? completedPickups.map(function(o){ return orderRow(o, fmtDate(o.dropoffDate)); }).join("") : '<div class="doc-notes empty-note">None yet.</div>')
+    +     '<div class="group-head">Scheduled <span class="gc">'+scheduledPickups.length+'</span></div>'
+    +     (scheduledPickups.length ? scheduledPickups.map(apptRow).join("") : '<div class="doc-notes empty-note">No call-ahead pickups scheduled.</div>')
+    +   '</div>'
+    +   '<div>'
+    +     '<h3 style="font-family:var(--display);font-size:16px;color:var(--indigo);margin:0 0 12px">Deliveries</h3>'
+    +     '<div class="group-head" style="margin-top:0">Completed <span class="gc">'+completedDeliveries.length+'</span></div>'
+    +     (completedDeliveries.length ? completedDeliveries.map(function(o){ return orderRow(o, fmtDateTime(o.deliveryDateTime)); }).join("") : '<div class="doc-notes empty-note">None yet.</div>')
+    +     '<div class="group-head">Scheduled <span class="gc">'+scheduledDeliveries.length+'</span></div>'
+    +     (scheduledDeliveries.length ? scheduledDeliveries.map(function(o){ return orderRow(o, fmtDateTime(o.deliveryDateTime)); }).join("") : '<div class="doc-notes empty-note">No deliveries scheduled yet.</div>')
+    +   '</div>'
+    + '</div>';
+
+    main.querySelectorAll(".pd-row[data-id]").forEach(function(el){
+      el.addEventListener("click", function(e){
+        if(e.target.closest(".pd-remove-appt")) return;
+        go("detail", el.dataset.id);
+      });
+    });
+    main.querySelectorAll(".pd-remove-appt").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        state.pickupAppts = state.pickupAppts.filter(function(a){ return a.id !== btn.dataset.apptid; });
+        savePickupAppts();
+        toast("Pickup appointment removed");
+        renderPickupsDeliveries();
+      });
+    });
+
+    main.querySelector("#btnAddPickupAppt").addEventListener("click", function(){
+      var wrap = main.querySelector("#pickupApptFormWrap");
+      wrap.style.display = "block";
+      wrap.innerHTML = ''
+        + '<div class="settings-block">'
+        +   '<h3>Schedule a pickup</h3>'
+        +   '<p class="desc">For a call-ahead pickup before there\u2019s a Service Order yet. Once the rug is actually picked up, create the Service Order as usual \u2014 it\u2019ll show up under Completed Pickups, and you can remove this appointment.</p>'
+        +   '<div class="grid">'
+        +     field("Customer name","apptName","",{req:true})
+        +     field("Phone","apptPhone","",{type:"tel"})
+        +     field("Address","apptAddress","",{})
+        +     '<div class="field"><label for="apptWhen">Scheduled date &amp; time</label><input type="datetime-local" id="apptWhen"></div>'
+        +   '</div>'
+        +   '<div class="field full" style="margin-top:12px"><label for="apptNotes">Notes</label><input type="text" id="apptNotes" placeholder="e.g. call on arrival, gate code 1234"></div>'
+        +   '<div style="margin-top:14px;display:flex;gap:10px">'
+        +     '<button type="button" class="btn primary" id="apptSaveBtn">Save appointment</button>'
+        +     '<button type="button" class="btn ghost" id="apptCancelBtn">Cancel</button>'
+        +   '</div>'
+        + '</div>';
+      wirePhoneInput(wrap.querySelector("#apptPhone"));
+      wrap.querySelector("#apptCancelBtn").addEventListener("click", function(){ wrap.style.display="none"; wrap.innerHTML=""; });
+      wrap.querySelector("#apptSaveBtn").addEventListener("click", function(){
+        var nameEl = wrap.querySelector("#apptName");
+        var name = nameEl.value.trim();
+        nameEl.classList.toggle("err", !name);
+        if(!name) return;
+        state.pickupAppts.push({
+          id: "appt_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
+          name: name,
+          phone: wrap.querySelector("#apptPhone").value.trim(),
+          address: wrap.querySelector("#apptAddress").value.trim(),
+          scheduledAt: wrap.querySelector("#apptWhen").value,
+          notes: wrap.querySelector("#apptNotes").value.trim(),
+          createdAt: new Date().toISOString()
+        });
+        savePickupAppts();
+        toast("Pickup appointment scheduled");
+        renderPickupsDeliveries();
+      });
     });
   }
 
@@ -2458,7 +2754,7 @@
   }
   function exportJSON(){
     var data = { app:"Fargo Hanna Service Orders", version:2, exportedAt:new Date().toISOString(),
-                 settings:state.settings, orders:state.orders, customers:state.customers };
+                 settings:state.settings, orders:state.orders, customers:state.customers, pickupAppts:state.pickupAppts };
     download("fargo-hanna-backup-"+stamp()+".json", JSON.stringify(data,null,2), "application/json");
     toast("Backup downloaded — save it to OneDrive");
   }
@@ -2478,7 +2774,7 @@
     var csv = [head].concat(rows).map(function(r){
       return r.map(function(c){ var v=String(c==null?"":c); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(",");
     }).join("\r\n");
-    download("fargo-hanna-orders-"+stamp()+".csv", "﻿"+csv, "text/csv");
+    download("fargo-hanna-orders-"+stamp()+".csv", "\ufeff"+csv, "text/csv");
     toast("CSV exported");
   }
   function importJSON(e){
@@ -2493,7 +2789,8 @@
         state.orders.forEach(migrateOrderShape);
         if(data.settings) state.settings = Object.assign(state.settings, data.settings);
         if(data.customers && Array.isArray(data.customers)) state.customers = data.customers;
-        saveOrders(); saveSettings(); saveCustomers();
+        if(data.pickupAppts && Array.isArray(data.pickupAppts)) state.pickupAppts = data.pickupAppts;
+        saveOrders(); saveSettings(); saveCustomers(); savePickupAppts();
         toast("Restored "+data.orders.length+" service orders");
         go("list");
       } catch(err){ alert("That file couldn’t be read as a Fargo Hanna backup. Make sure it’s a .json backup exported from this app."); }
@@ -2504,7 +2801,14 @@
 
   /* ---------------- Nav wiring ---------------- */
   document.querySelectorAll(".nav-btn").forEach(function(b){
-    b.addEventListener("click", function(){ go(b.dataset.nav); });
+    b.addEventListener("click", function(){
+      if(currentFormDraftSaver) currentFormDraftSaver();
+      go(b.dataset.nav);
+    });
+  });
+  // Also catch a browser refresh/tab-close while a New/Edit form is open.
+  window.addEventListener("beforeunload", function(){
+    if(currentFormDraftSaver) currentFormDraftSaver();
   });
 
   // storage sanity check
