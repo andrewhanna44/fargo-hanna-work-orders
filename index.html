@@ -56,7 +56,7 @@
     color:#eef0f6;
     padding:26px 20px;
     display:flex; flex-direction:column; gap:8px;
-    position:sticky; top:0; height:100vh;
+    position:sticky; top:0; min-height:100vh;
   }
   .brand{ text-align:center; padding:8px 6px 20px; border-bottom:1px solid rgba(255,255,255,.12); margin-bottom:14px; }
   .brand-plaque{
@@ -205,7 +205,7 @@
   .field.full{ grid-column:1 / -1; }
   .field label{ font-size:13px; font-weight:600; color:var(--ink); }
   .field label .req{ color:var(--madder); }
-  .field .hint{ font-size:11.5px; color:var(--ink-soft); font-weight:400; display:block; margin-top:2px; }
+  .hint{ font-size:11.5px; color:var(--ink-soft); font-weight:400; }
   input, select, textarea{
     font-family:inherit; font-size:14.5px; color:var(--ink);
     background:var(--white); border:1px solid var(--line); border-radius:var(--r);
@@ -257,7 +257,7 @@
   .rug-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
   .rug-col{ border:1px solid var(--line); border-radius:10px; padding:14px; background:#fbf9f4; }
   .rug-col h4{ font-family:var(--display); font-size:13.5px; color:var(--indigo); margin:0 0 10px; font-weight:600; }
-  .rug-col textarea{ min-height:70px; }
+  .rug-col textarea{ min-height:88px; }
   .rug-col .field{ margin-bottom:10px; }
   .rug-col .field:last-of-type{ margin-bottom:0; }
 
@@ -293,9 +293,14 @@
   .rug-svc-item span{ overflow:hidden; text-overflow:ellipsis; }
   .rug-svc-item:hover{ border-color:#c9bfa8; }
   .rug-svc-item.checked{ border-color:var(--indigo); background:var(--indigo-100); font-weight:600; }
-  .rug-pad-sub, .rug-misc-sub{ display:flex; flex-direction:column; gap:5px; margin-top:9px; }
+  .rug-pad-sub, .rug-misc-sub{
+    display:flex; flex-direction:column; gap:5px;
+    margin:2px 0 6px 14px; padding:9px 10px;
+    background:var(--indigo-100); border:1px solid var(--line); border-left:3px solid var(--indigo);
+    border-radius:0 7px 7px 0;
+  }
   .rug-pad-sub label, .rug-misc-sub label{ font-size:11.5px; font-weight:600; }
-  .rug-pad-sub select, .rug-misc-sub input{ width:100%; box-sizing:border-box; font-size:13px; padding:8px 10px; }
+  .rug-pad-sub select, .rug-misc-sub input{ width:100%; box-sizing:border-box; font-size:13px; padding:8px 10px; background:#fff; }
   .print-rug-diagram{ width:100px; height:auto; flex:0 0 auto; }
   .print-rug-flex{ display:flex; gap:10px; align-items:flex-start; }
   .print-rug-flex .prf-text{ flex:1 1 auto; }
@@ -373,10 +378,10 @@
 
   .logout-btn{
     display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-    background:transparent; color:#aab3ca; border:0; border-radius:var(--r);
+    background:transparent; color:#ff6b6b; border:0; border-radius:var(--r);
     padding:9px 13px; font-size:13px; cursor:pointer; margin-top:8px;
   }
-  .logout-btn:hover{ background:rgba(255,255,255,.07); color:#fff; }
+  .logout-btn:hover{ background:rgba(255,255,255,.07); color:#ff8f8f; }
 
   /* ---------- Status buckets ---------- */
   .bucket-all{
@@ -454,6 +459,17 @@
   .pd-row .num{ font-family:var(--mono); font-size:12.5px; color:var(--indigo); font-weight:600; margin-right:8px; }
   .pd-row .who{ font-weight:600; }
   .pd-row-meta{ font-size:12.5px; color:var(--ink-soft); margin-top:3px; }
+  .pd-panel{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--shadow); padding:22px 24px 26px; border-top:5px solid var(--indigo);
+  }
+  .pd-panel.deliveries{ border-top-color:var(--sage); }
+  .pd-panel h3{
+    font-family:var(--display); font-size:21px; font-weight:700; color:var(--indigo); margin:0 0 2px;
+    display:flex; align-items:center; gap:9px;
+  }
+  .pd-panel.deliveries h3{ color:var(--sage); }
+  .pd-panel .pd-panel-sub{ font-size:12px; color:var(--ink-soft); margin:0 0 18px; padding-bottom:16px; border-bottom:1px solid var(--line-soft); }
 
   /* ---------- Price disclaimer ---------- */
   .price-note{ font-size:12px; color:var(--ink-soft); font-style:italic; line-height:1.45; margin-top:10px; padding-top:10px; border-top:1px dotted var(--line-soft); }
@@ -470,9 +486,11 @@
     .guard{ height:5px; background:
       repeating-linear-gradient(45deg,#7e2b34 0,#7e2b34 5px,#fff 5px,#fff 10px);
       border-top:1.5px solid #7e2b34; border-bottom:1.5px solid #7e2b34; }
-    .print-letterhead{ text-align:center; padding:3px 0 4px; }
-    .print-letterhead img{ max-width:105px; height:auto; margin:0 auto 2px; display:block; }
-    .print-letterhead .contact{ font-family:var(--body); font-size:10.5px; color:#333; margin-top:1px; }
+    .print-letterhead{ display:flex; align-items:center; gap:14px; padding:3px 0 8px; border-bottom:1px solid #ccc; margin-bottom:6px; }
+    .print-letterhead img{ width:110px; height:auto; flex:0 0 auto; display:block; }
+    .print-letterhead .lh-text{ text-align:left; }
+    .print-letterhead .lh-text .shopname{ font-family:var(--display); font-size:15.5px; font-weight:700; color:#000; line-height:1.2; }
+    .print-letterhead .contact{ font-family:var(--body); font-size:10.5px; color:#333; margin-top:3px; line-height:1.55; }
     .print-title{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid #000; padding-bottom:4px; margin:10px 0 9px; }
     .print-title h2{ font-size:15.5px; margin:0; }
     .print-title .pnum{ font-family:var(--mono); font-size:12.5px; }
@@ -837,12 +855,17 @@
     out.retail = Object.assign({}, DEFAULT_SERVICE_PRICES.retail, sp.retail || {});
     return out;
   }
+  // Hardcoded so a brand-new browser (or a fresh GitHub Pages deploy) always shows the
+  // shop's real contact info on printed orders and emails, even before anyone visits the
+  // Settings page. Editing & saving Shop details still overrides these via localStorage —
+  // this is just the baseline that ships with the code itself.
   function loadSettings(){
     var def = {
       shopName:"Fargo Hanna Oriental Rugs",
-      address:"",
-      phone:"",
-      email:"",
+      address:"4422 Durham-Chapel Hill Blvd, Durham, NC, 27707",
+      phone:"9194190963",
+      email:"info@fargohanna.com",
+      hours:"Tuesday - Saturday: 10am - 5pm; Sunday & Monday: Closed",
       nextNumber:1001,
       servicePrices: Object.assign({}, DEFAULT_SERVICE_PRICES)
     };
@@ -871,6 +894,7 @@
     custSearch: "",
     custFormId: null,   // null = list only, "new" = add form, or a customer id = edit form
     settings: loadSettings(),
+    editingShopDetails: false,   // gates the Shop details block on Backup & settings behind an Edit button
     backup: {
       supported: typeof window.showDirectoryPicker === "function",
       handle: null, status: "none", folderName: "", lastBackupAt: null
@@ -1388,7 +1412,7 @@
 
     // Past due section (red — most urgent)
     html += '<div class="alert-block pastdue">'
-      + '<h3><span class="flag overdue">⚑</span> Past Due</h3>'
+      + '<h3><span class="flag overdue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span> Past Due</h3>'
       + '<p class="desc">Open orders already past the promise date given to the customer.</p>';
     if(a.pastDue.length === 0){
       html += '<div style="color:var(--ink-soft);font-size:13.5px">Nothing past due right now.</div>';
@@ -1403,7 +1427,7 @@
 
     // Due soon section
     html += '<div class="alert-block duesoon">'
-      + '<h3><span class="flag due">⚑</span> Approaching promise date</h3>'
+      + '<h3><span class="flag due"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span> Approaching promise date</h3>'
       + '<p class="desc">Open orders within '+PROMISE_BUSINESS_DAYS+' business days of the promise date on the original service order.</p>';
     if(a.dueSoon.length === 0){
       html += '<div style="color:var(--ink-soft);font-size:13.5px">Nothing coming due — all promise dates are more than '+PROMISE_BUSINESS_DAYS+' business days out.</div>';
@@ -1421,7 +1445,7 @@
 
     // Stalled / never picked up section
     html += '<div class="alert-block stalledbox">'
-      + '<h3><span class="flag stalled">⚑</span> Stalled / Never Picked Up</h3>'
+      + '<h3><span class="flag stalled"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Stalled / Never Picked Up</h3>'
       + '<p class="desc">Open orders with more than '+STALLED_DAYS+' days of inactivity (no status change or edit), including items that have simply never been picked up.</p>';
     if(a.stalled.length === 0){
       html += '<div style="color:var(--ink-soft);font-size:13.5px">Nothing stalled — every open order has been touched within the last '+STALLED_DAYS+' days.</div>';
@@ -1637,13 +1661,13 @@
     + '</fieldset>'
 
     + '<fieldset class="fieldset"><legend>Cost</legend>'
+    +   '<div class="hint" style="display:block;margin:-8px 0 16px">Cleaning &amp; Pad price automatically from each rug\u2019s size. Pickup &amp; delivery unlocks once checked on a rug.</div>'
     +   '<div class="grid fourths">'
     +     '<div class="field"><label>Cleaning fee</label><div class="money-wrap"><input id="cleaningFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     '<div class="field"><label>Pad fee</label><div class="money-wrap"><input id="padFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     moneyField("Other services fee","otherFee",(o.otherFee?o.otherFee:"0.00"),{})
     +     moneyField("Pickup & delivery fee","pdFee",(o.pdFee?o.pdFee:"0.00"),{})
-    +   '</div>'
-    +   '<div class="hint" style="margin:-6px 0 16px 2px">Cleaning &amp; Pad price automatically from each rug\u2019s size. Pickup &amp; delivery unlocks once checked on a rug.</div>'
+    +   '</div>' 
     +   '<div class="grid thirds" style="margin-top:14px">'
     +     '<div class="field"><label>Subtotal</label><div class="money-wrap"><input id="subtotalView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     '<div class="field">'
@@ -2030,11 +2054,11 @@
     var svc = r.services || blankServices();
     return '<div class="rug-col"><h4>Rug #'+n+(n===1?'':' <span style="font-weight:400;color:var(--ink-soft);font-size:11.5px">(optional)</span>')+'</h4>'
       + '<div class="field"><label for="rug'+n+'_desc">Description &amp; work needed</label>'
-      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. Persian Tabriz, wine stain in center, fringe wear">'+esc(r.description)+'</textarea></div>'
+      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. Persian Tabriz, wine stain, fringe wear">'+esc(r.description)+'</textarea></div>'
       + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 8x9.9 = 8ft × 9ft9in"})
       + '<div class="rug-sqft-hint" id="rug'+n+'_sqftHint" style="font-size:11.5px;color:var(--ink-soft);margin:-10px 0 12px 2px;min-height:14px"></div>'
       + '<div class="rug-diagram-wrap">'
-      +   '<div class="rdg-label">Mark a spot, draw a line, or draw a box — add as many as you need, even on top of each other. Use Undo to remove just the last mark, or Clear marks to wipe them all.</div>'
+      +   '<div class="rdg-label">Mark, draw a line, or draw a box. Undo removes the last mark, or Clear removes them all.</div>'
       +   '<div class="rdg-tools">'
       +     '<button type="button" class="rdg-tool active" data-rugidx="'+n+'" data-tool="point" title="Mark a spot">✕ Mark</button>'
       +     '<button type="button" class="rdg-tool" data-rugidx="'+n+'" data-tool="line" title="Click and drag to draw a line">╱ Line</button>'
@@ -2145,6 +2169,11 @@
     return '<div class="field"><label for="'+id+'">'+esc(label)+(opts.req?' <span class="req">*</span>':'')
       + (opts.hint?' <span class="hint">'+esc(opts.hint)+'</span>':'')
       + '</label><input type="'+(opts.type||"text")+'" id="'+id+'" value="'+esc(val)+'"></div>';
+  }
+  // A read-only "field" — same visual language as the app's other readonly/auto-calculated
+  // inputs (grayed background), used for the Shop details summary view before Edit is clicked.
+  function kvStatic(label, val){
+    return '<div class="field"><label>'+esc(label)+'</label><input value="'+esc(val||"\u2014")+'" readonly tabindex="-1" style="background:#f2efe7"></div>';
   }
   function moneyField(label, id, val, opts){
     opts=opts||{};
@@ -2443,10 +2472,29 @@
 
   /* ---------------- Email (opens Outlook via mailto) ---------------- */
   var RULE = "──────────────────────────────────────────";
-  function shopSignature(){
+  // Renders text using the Unicode Mathematical Sans-Bold block so key lines (TOTAL, FINAL
+  // BALANCE DUE, section headers) actually look bold in a plain-text mailto body — real
+  // HTML/markdown bold isn't available there, but these are just different codepoints for
+  // bold-shaped glyphs, so they render bold in any client/font without any markup at all.
+  function boldUnicode(str){
+    var out = "";
+    for(var i=0;i<str.length;i++){
+      var code = str.charCodeAt(i);
+      if(code>=65 && code<=90) out += String.fromCodePoint(0x1D5D4 + (code-65));       // A-Z
+      else if(code>=97 && code<=122) out += String.fromCodePoint(0x1D5EE + (code-97)); // a-z
+      else if(code>=48 && code<=57) out += String.fromCodePoint(0x1D7EC + (code-48));  // 0-9
+      else out += str[i];
+    }
+    return out;
+  }
+  // Shown near the top of every customer email so it's unmissable that replies aren't
+  // monitored (the shop sends from a no-reply address) and gives a real way to reach us.
+  function noReplyNotice(){
     var s = state.settings;
-    var contact = [s.address, s.phone, s.email, s.hours].filter(Boolean).join("  ·  ");
-    return (s.shopName||"Fargo Hanna") + (contact ? "\n"+contact : "");
+    var phone = fmtPhoneDisplay(s.phone) || "the shop";
+    var email = s.email || "info@fargohanna.com";
+    return "\u26A0 This is an automated receipt sent from a no-reply mailbox \u2014 replies aren't monitored.\n"+
+      boldUnicode("Questions?")+" Call "+boldUnicode(phone)+" or email "+boldUnicode(email)+".";
   }
   function emailWorkOrder(o){
     if(!o.customer.email){ toast("No email on file — add one via Edit"); return; }
@@ -2456,22 +2504,24 @@
       return "  Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+":  "+(rr.description||"—");
     }).join("\n");
     var body =
-      shopName.toUpperCase()+"\n"+
+      boldUnicode(shopName.toUpperCase())+"\n"+
       "Service Order Receipt  ·  "+o.number+"\n"+
+      RULE+"\n"+
+      noReplyNotice()+"\n"+
       RULE+"\n\n"+
       "Dear "+o.customer.name+",\n\n"+
       "Thank you for trusting us with your rug. Here's a summary of your order:\n\n"+
-      "CUSTOMER\n"+
+      boldUnicode("CUSTOMER")+"\n"+
       "  "+o.customer.name+"\n"+
       (o.customer.phone?"  "+fmtPhoneDisplay(o.customer.phone)+"\n":"")+
       (o.customer.email?"  "+o.customer.email+"\n":"")+
       "\n"+
-      "SERVICE\n"+
+      boldUnicode("SERVICE")+"\n"+
       "  Services:        "+orderServiceSummary(o)+"\n"+
       "  Dropped off:     "+fmtDate(o.dropoffDate)+"\n"+
       "  Expected ready:  "+fmtDate(o.readyDate)+"\n\n"+
-      (rugLines ? "RUGS & WORK\n"+rugLines+"\n\n" : "")+
-      (o.addons ? "ADD-ONS\n  "+o.addons+"\n\n" : "")+
+      (rugLines ? boldUnicode("RUGS & WORK")+"\n"+rugLines+"\n\n" : "")+
+      (o.addons ? boldUnicode("ADD-ONS")+"\n  "+o.addons+"\n\n" : "")+
       RULE+"\n"+
       "  Cleaning fee                "+money(o.cleaningFee)+"\n"+
       (Number(o.padFee)?"  Pad fee                    "+money(o.padFee)+"\n":"")+
@@ -2479,14 +2529,14 @@
       (o.pdFee?"  Pickup & delivery fee      "+money(o.pdFee)+"\n":"")+
       "  Subtotal                    "+money(o.subtotal)+"\n"+
       "  Sales tax"+(o.taxEnabled?" (7.5%)":" (n/a)")+"                "+money(taxAmt(o))+"\n"+
-      "  Total                       "+money(o.cost)+"\n"+
+      "  "+boldUnicode("TOTAL")+"                        "+boldUnicode(money(o.cost))+"\n"+
       (Number(o.discountPct)?"  Discount ("+o.discountPct+"%)              -"+money(discountAmt(o))+"\n":"")+
       "  Prepay amount               "+money(o.deposit)+"\n"+
-      "  Final balance due           "+money(balance(o))+"\n"+
+      "  "+boldUnicode("FINAL BALANCE DUE")+"            "+boldUnicode(money(balance(o)))+"\n"+
       RULE+"\n\n"+
       PRICE_DISCLAIMER+"\n\n"+
       "We'll be in touch as soon as your rug is ready. Please keep this order number for your records.\n\n"+
-      "Warm regards,\n"+shopSignature();
+      "Warm regards,";
     var subject = shopName+" — Service Order Receipt "+o.number;
     openMail(o.customer.email, subject, body);
     toast("Email ready in Outlook — review and send");
@@ -2498,21 +2548,24 @@
       var s = state.settings;
       var shopName = s.shopName || "Fargo Hanna";
       var body =
-        shopName.toUpperCase()+"\n"+
+        boldUnicode(shopName.toUpperCase())+"\n"+
         "Your Rug Is Ready For Pickup\n"+
+        RULE+"\n"+
+        noReplyNotice()+"\n"+
         RULE+"\n\n"+
         "Dear "+o.customer.name+",\n\n"+
         "Good news — your rug is ready for pickup!\n\n"+
         "  Service order:   "+o.number+"\n"+
         "  Services:        "+orderServiceSummary(o)+"\n"+
-        "  Balance due:     "+money(balance(o))+"\n\n"+
-        "Please stop by at your convenience. If you have any questions, just reply to this email or give us a call.\n\n"+
-        "Thank you,\n"+shopSignature();
+        "  "+boldUnicode("Balance due:")+"     "+boldUnicode(money(balance(o)))+"\n\n"+
+        "Please stop by at your convenience \u2014 we look forward to seeing you.\n\n"+
+        "Thank you,";
       openMail(o.customer.email, shopName+" — Your Rug Is Ready ("+o.number+")", body);
       renderDetail();
       toast("Marked ready — email drafted in Outlook");
     });
   }
+
   function openMail(to, subject, body){
     var url = "mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
     // Fallback copy in case no mail client is configured
@@ -2523,13 +2576,17 @@
   /* ---------------- Print document ---------------- */
   function populatePrint(o){
     var s = state.settings;
-    var contact = [s.address, s.phone, s.email, s.hours].filter(Boolean).join("  ·  ");
+    var contact = [fmtPhoneDisplay(s.phone), s.email, s.address].filter(Boolean).join("  \u00b7  ");
     document.getElementById("print-root").innerHTML = ''
     + '<div class="print-doc">'
     +   '<div class="guard"></div>'
     +   '<div class="print-letterhead">'
     +     '<img src="'+LOGO_DATA_URL+'" alt="'+esc(s.shopName)+'">'
-    +     (contact?'<div class="contact">'+esc(contact)+'</div>':'')
+    +     '<div class="lh-text">'
+    +       '<div class="shopname">'+esc(s.shopName)+'</div>'
+    +       (contact?'<div class="contact">'+esc(contact)+'</div>':'')
+    +       (s.hours?'<div class="contact">Hours: '+esc(s.hours)+'</div>':'')
+    +     '</div>' 
     +   '</div>'
     +   '<div class="print-title"><h2>Service Order</h2><span class="pnum">'+esc(o.number)+'</span></div>'
     +   (o.status==="Canceled" ? '<div class="print-notes" style="border:1.5px solid #7e2b34"><h3>CANCELED'+(o.canceledAt?' — '+esc(fmtDate((o.canceledAt||"").slice(0,10))):'')+'</h3><div>Reason: '+esc(o.cancelReason||"—")+'</div></div>' : '')
@@ -2611,16 +2668,30 @@
     +   '<div class="sub">Shop details for printed orders and emails · saving a copy to OneDrive</div></div></div>'
 
     + '<div class="settings-block">'
-    +   '<h3>Shop details</h3>'
-    +   '<p class="desc">These appear on the printed service order and in customer emails.</p>'
-    +   '<div class="grid">'
-    +     field("Shop name","set_name",s.shopName,{})
-    +     field("Phone","set_phone",fmtPhoneDisplay(s.phone),{type:"tel"})
-    +     field("Email","set_email",s.email,{type:"email"})
-    +     '<div class="field"><label for="set_address">Address</label><input id="set_address" value="'+esc(s.address)+'"></div>'
-    +     '<div class="field"><label for="set_hours">Store hours</label><input id="set_hours" value="'+esc(s.hours||"")+'" placeholder="e.g. Mon–Sat 9am–5pm"></div>'
+    +   '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">'
+    +     '<div><h3 style="margin-bottom:2px">Shop details</h3><p class="desc" style="margin:0">These appear on the printed service order and in customer emails.</p></div>'
+    +     (!state.editingShopDetails ? '<button type="button" class="btn ghost sm" id="editShop">Edit</button>' : '')
     +   '</div>'
-    +   '<div style="margin-top:16px"><button class="btn primary" id="saveShop">Save shop details</button></div>'
+    +   (state.editingShopDetails
+          ? '<div class="grid" style="margin-top:16px">'
+            + field("Shop name","set_name",s.shopName,{})
+            + field("Phone","set_phone",fmtPhoneDisplay(s.phone),{type:"tel"})
+            + field("Email","set_email",s.email,{type:"email"})
+            + '<div class="field"><label for="set_address">Address</label><input id="set_address" value="'+esc(s.address)+'"></div>'
+            + '<div class="field"><label for="set_hours">Store hours</label><input id="set_hours" value="'+esc(s.hours||"")+'" placeholder="e.g. Mon\u2013Sat 9am\u20135pm"></div>'
+            + '</div>'
+            + '<div style="margin-top:16px;display:flex;gap:10px">'
+            +   '<button type="button" class="btn primary" id="saveShop">Save shop details</button>'
+            +   '<button type="button" class="btn ghost" id="cancelShop">Cancel</button>'
+            + '</div>'
+          : '<div class="grid" style="margin-top:16px">'
+            + kvStatic("Shop name", s.shopName)
+            + kvStatic("Phone", fmtPhoneDisplay(s.phone))
+            + kvStatic("Email", s.email)
+            + kvStatic("Address", s.address)
+            + kvStatic("Store hours", s.hours)
+            + '</div>')
+    + '</div>' 
     + '</div>'
 
     + '<div class="settings-block">'
@@ -2642,13 +2713,27 @@
     + '</div>';
 
     wirePhoneInput(main.querySelector("#set_phone"));
-    main.querySelector("#saveShop").addEventListener("click", function(){
+    var editShopBtn = main.querySelector("#editShop");
+    if(editShopBtn) editShopBtn.addEventListener("click", function(){
+      state.editingShopDetails = true;
+      renderSettings();
+    });
+    var saveShopBtn = main.querySelector("#saveShop");
+    if(saveShopBtn) saveShopBtn.addEventListener("click", function(){
       state.settings.shopName = main.querySelector("#set_name").value.trim() || "Fargo Hanna Oriental Rugs";
       state.settings.phone = main.querySelector("#set_phone").value.trim();
       state.settings.email = main.querySelector("#set_email").value.trim();
       state.settings.address = main.querySelector("#set_address").value.trim();
       state.settings.hours = main.querySelector("#set_hours").value.trim();
-      saveSettings(); toast("Shop details saved");
+      saveSettings();
+      state.editingShopDetails = false;
+      renderSettings();
+      toast("Shop details saved");
+    });
+    var cancelShopBtn = main.querySelector("#cancelShop");
+    if(cancelShopBtn) cancelShopBtn.addEventListener("click", function(){
+      state.editingShopDetails = false;
+      renderSettings();
     });
     main.querySelector("#expJson").addEventListener("click", exportJSON);
     main.querySelector("#expCsv").addEventListener("click", exportCSV);
@@ -2700,20 +2785,23 @@
     + '<div id="pickupApptFormWrap" style="display:none;margin-bottom:20px"></div>'
 
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">'
-    +   '<div>'
-    +     '<h3 style="font-family:var(--display);font-size:16px;color:var(--indigo);margin:0 0 12px">Pickups</h3>'
+    +   '<div class="pd-panel pickups">'
+    +     '<h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>Pickups</h3>'
+    +     '<div class="pd-panel-sub">Rugs coming into the shop \u2014 completed drop-offs and call-ahead appointments</div>'
     +     '<div class="group-head" style="margin-top:0">Completed <span class="gc">'+completedPickups.length+'</span></div>'
     +     (completedPickups.length ? completedPickups.map(function(o){ return orderRow(o, fmtDate(o.dropoffDate)); }).join("") : '<div class="doc-notes empty-note">None yet.</div>')
     +     '<div class="group-head">Scheduled <span class="gc">'+scheduledPickups.length+'</span></div>'
     +     (scheduledPickups.length ? scheduledPickups.map(apptRow).join("") : '<div class="doc-notes empty-note">No call-ahead pickups scheduled.</div>')
     +   '</div>'
-    +   '<div>'
-    +     '<h3 style="font-family:var(--display);font-size:16px;color:var(--indigo);margin:0 0 12px">Deliveries</h3>'
+    +   '<div class="pd-panel deliveries">'
+    +     '<h3><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><rect x="1" y="4" width="14" height="12"/><path d="M15 9h4l3 3v4h-7z"/><circle cx="5.5" cy="18" r="1.8" fill="currentColor"/><circle cx="17.5" cy="18" r="1.8" fill="currentColor"/></svg>Deliveries</h3>'
+    +     '<div class="pd-panel-sub">Finished rugs headed back out \u2014 completed and upcoming deliveries</div>'
     +     '<div class="group-head" style="margin-top:0">Completed <span class="gc">'+completedDeliveries.length+'</span></div>'
     +     (completedDeliveries.length ? completedDeliveries.map(function(o){ return orderRow(o, fmtDateTime(o.deliveryDateTime)); }).join("") : '<div class="doc-notes empty-note">None yet.</div>')
     +     '<div class="group-head">Scheduled <span class="gc">'+scheduledDeliveries.length+'</span></div>'
     +     (scheduledDeliveries.length ? scheduledDeliveries.map(function(o){ return orderRow(o, fmtDateTime(o.deliveryDateTime)); }).join("") : '<div class="doc-notes empty-note">No deliveries scheduled yet.</div>')
     +   '</div>'
+    + '</div>';
     + '</div>';
 
     main.querySelectorAll(".pd-row[data-id]").forEach(function(el){
