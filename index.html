@@ -301,6 +301,13 @@
   }
   .rug-pad-sub label, .rug-misc-sub label{ font-size:11.5px; font-weight:600; }
   .rug-pad-sub select, .rug-misc-sub input{ width:100%; box-sizing:border-box; font-size:13px; padding:8px 10px; background:#fff; }
+  .sides-picker{ display:flex; gap:12px; }
+  .sides-picker label{ display:flex; align-items:center; gap:5px; font-size:11px; font-weight:400; white-space:nowrap; }
+  .sides-picker input{ width:auto; flex:0 0 auto; }
+  .rug-svc-divider{
+    font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--ink-soft); border-top:1px dashed var(--line); margin:10px 0 8px; padding-top:9px;
+  }
   .print-rug-diagram{ width:100px; height:auto; flex:0 0 auto; }
   .print-rug-flex{ display:flex; gap:10px; align-items:flex-start; }
   .print-rug-flex .prf-text{ flex:1 1 auto; }
@@ -605,7 +612,7 @@
     return { cleaning:false, repair:false, repairText:"", pad:false, padType:"", padSize:"", pickupDelivery:false,
       digester:false, storage:false, storageText:"", appraisal:false, appraisalText:"",
       woolGuard:false, woolGuardSides:"", moth:false, mothSides:"",
-      misc:false, miscText:"" };
+      misc:false, miscText:"", petFee:false, petFeeText:"" };
   }
   function migrateOrderShape(o){
     if(!o.rugs){
@@ -637,6 +644,7 @@
       if(r.services.padSize === undefined) r.services.padSize = "";
       if(r.services.woolGuardSides === undefined) r.services.woolGuardSides = "";
       if(r.services.mothSides === undefined) r.services.mothSides = "";
+      if(r.services.petFee === undefined) r.services.petFee = false;
       DESC_BOX_SERVICE_KEYS.forEach(function(key){
         if(r.services[key+"Text"] === undefined) r.services[key+"Text"] = "";
       });
@@ -645,6 +653,7 @@
     if(o.soakFee === undefined || o.soakFee === null || o.soakFee === "") o.soakFee = 0;
     if(o.woolGuardFee === undefined || o.woolGuardFee === null || o.woolGuardFee === "") o.woolGuardFee = 0;
     if(o.mothFee === undefined || o.mothFee === null || o.mothFee === "") o.mothFee = 0;
+    if(o.petFee === undefined || o.petFee === null || o.petFee === "") o.petFee = 0;
     if(o.customerId === undefined) o.customerId = null;
     if(o.cancelReason === undefined) o.cancelReason = "";
     if(o.canceledAt === undefined) o.canceledAt = null;
@@ -847,7 +856,8 @@
     appraisal: "",
     woolGuard: { rate1:0.30, rate2:0.55 },
     moth: { rate1:0.30, rate2:0.55 },
-    misc: ""
+    misc: "",
+    petFee: ""
   };
   // Upgrades an old flat-number servicePrices object (cleaning/pad/pickupDelivery/digester/
   // woolGuard/moth used to be plain numbers or blank strings) into the new nested shape
@@ -923,7 +933,7 @@
   // dedicated sub-fields (fee unlock, size/type pickers, misc text) elsewhere.
   // (Defined here, before state init, since migrateOrderShape() — run during loadOrders()
   // as part of building the initial state object below — depends on it.)
-  var DESC_BOX_SERVICE_KEYS = ["repair","storage","appraisal"];
+  var DESC_BOX_SERVICE_KEYS = ["repair","storage","appraisal","petFee"];
   var state = {
     view: "list",
     selectedId: null,
@@ -1103,18 +1113,27 @@
     });
     return { cleaningFee: cleaningTotal, padFee: padTotal, soakFee: soakTotal, woolGuardFee: wgTotal, mothFee: mothTotal };
   }
+  // Order matters here: the first 7 are the services with their own exclusively-named
+  // cost box in the Cost fieldset (Wash/Cleaning, Pad, Pickup & Delivery, Soak, Wool Guard,
+  // Moth, Pet Stain); the last 4 (Repair, Storage, Appraisal, Miscellaneous) are custom
+  // in-store pricing charged manually via the Other Services Fee field. rugBlock() renders
+  // a visual "Additional Services" divider right at that boundary.
   var SERVICE_DEFS = [
     {key:"cleaning", label:"Wash/Cleaning"},
-    {key:"repair", label:"Repair"},
     {key:"pad", label:"Pad"},
     {key:"pickupDelivery", label:"Pickup & Delivery"},
     {key:"digester", label:"Soak"},
-    {key:"storage", label:"Storage"},
-    {key:"appraisal", label:"Appraisal"},
     {key:"woolGuard", label:"Wool Guard"},
     {key:"moth", label:"Moth Treatment"},
+    {key:"petFee", label:"Pet Stain"},
+    {key:"repair", label:"Repair"},
+    {key:"storage", label:"Storage"},
+    {key:"appraisal", label:"Appraisal"},
     {key:"misc", label:"Miscellaneous"}
   ];
+  // Index in SERVICE_DEFS where the "Additional Services" divider is drawn (right before
+  // this index) — must stay in sync with the array above if the grouping ever changes.
+  var SERVICE_DIVIDER_INDEX = 7;
   // Human-readable list of the services checked on a single rug, e.g. ["Cleaning","Pad (Cushion Air)"].
   function rugServiceLabels(r){
     var svc = (r && r.services) || {};
@@ -1793,6 +1812,7 @@
       o.readyDate = dd.readyDate;
       o.otherFee = dd.otherFee;
       o.pdFee = dd.pdFee;
+      o.petFee = dd.petFee;
       o.taxEnabled = dd.taxEnabled;
       o.discountPct = dd.discountPct;
       o.deposit = dd.deposit;
@@ -1856,8 +1876,9 @@
     +     moneyField("Soak fee — editable","soakFeeView",(o.soakFee?o.soakFee:"0.00"),{})
     +     '<div class="field"><label>Wool Guard fee</label><div class="money-wrap"><input id="woolGuardFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     '<div class="field"><label>Moth fee</label><div class="money-wrap"><input id="mothFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
-    +     moneyField("Other services fee","otherFee",(o.otherFee?o.otherFee:"0.00"),{})
+    +     moneyField("Pet Stain fee","petFee",(o.petFee?o.petFee:"0.00"),{})
     +     moneyField("Pickup & delivery fee","pdFee",(o.pdFee?o.pdFee:"0.00"),{})
+    +     moneyField("Other services fee","otherFee",(o.otherFee?o.otherFee:"0.00"),{})
     +   '</div>' 
     +   '<div class="grid thirds" style="margin-top:14px">'
     +     '<div class="field"><label>Subtotal</label><div class="money-wrap"><input id="subtotalView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
@@ -1945,6 +1966,8 @@
       var woolGuardFee = autoFees.woolGuardFee;
       var mothFee = autoFees.mothFee;
       var otherFee = parseFloat(main.querySelector("#otherFee").value)||0;
+      var petFeeEl = main.querySelector("#petFee");
+      var petFee = petFeeEl ? (parseFloat(petFeeEl.value)||0) : 0;
       var feeEl = main.querySelector("#pdFee");
       var pdFee = (feeEl && !feeEl.disabled) ? (parseFloat(feeEl.value)||0) : 0;
 
@@ -1961,7 +1984,7 @@
         soakFee = parseFloat(soakEl.value)||0;
       }
 
-      var sub = cleaningFee + padFee + soakFee + woolGuardFee + mothFee + otherFee + pdFee;
+      var sub = cleaningFee + padFee + soakFee + woolGuardFee + mothFee + petFee + otherFee + pdFee;
       var discountPct = Math.min(100, Math.max(0, parseFloat(main.querySelector("#discountPct").value)||0));
       var discountAmt = sub * (discountPct/100);
       var taxableSub = Math.max(0, sub - discountAmt);
@@ -1982,6 +2005,7 @@
     }
     wirePhoneInput(main.querySelector("#cust_phone"));
     main.querySelector("#otherFee").addEventListener("input", recalcAll);
+    main.querySelector("#petFee").addEventListener("input", recalcAll);
     main.querySelector("#taxToggle").addEventListener("change", recalcAll);
     main.querySelector("#deposit").addEventListener("input", recalcAll);
     main.querySelector("#pdFee").addEventListener("input", recalcAll);
@@ -2246,6 +2270,7 @@
         readyDate: g2("ready"),
         otherFee: g2("otherFee"),
         pdFee: g2("pdFee"),
+        petFee: g2("petFee"),
         taxEnabled: !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked),
         discountPct: g2("discountPct"),
         deposit: g2("deposit"),
@@ -2314,8 +2339,9 @@
       + '<div class="rug-svc-wrap">'
       +   '<div class="rdg-label">Type of work for this rug</div>'
       +   '<div class="rug-svc-grid">'
-      +     SERVICE_DEFS.map(function(d){
-              var row = svcCheckbox(n, d.key, d.label, !!svc[d.key]);
+      +     SERVICE_DEFS.map(function(d, idx){
+              var row = idx === SERVICE_DIVIDER_INDEX ? '<div class="rug-svc-divider">Additional Services</div>' : "";
+              row += svcCheckbox(n, d.key, d.label, !!svc[d.key]);
               // Each item's dropdown/detail field lives immediately under that item,
               // not tacked on at the end of the whole checklist.
               if(d.key === "pad"){
@@ -2340,9 +2366,9 @@
                 var sidesVal = svc[sidesField] || "";
                 row += '<div class="rug-misc-sub" id="rug'+n+'_'+d.key+'Wrap" style="display:'+(svc[d.key]?"flex":"none")+'">'
                   +   '<label>Sides treated</label>'
-                  +   '<div style="display:flex;gap:16px">'
-                  +     '<label style="display:flex;align-items:center;gap:6px;font-weight:400"><input type="radio" name="'+sidesName+'" value="1"'+(sidesVal==="1"?" checked":"")+'> 1 side</label>'
-                  +     '<label style="display:flex;align-items:center;gap:6px;font-weight:400"><input type="radio" name="'+sidesName+'" value="2"'+(sidesVal==="2"?" checked":"")+'> 2 sides</label>'
+                  +   '<div class="sides-picker">'
+                  +     '<label><input type="radio" name="'+sidesName+'" value="1"'+(sidesVal==="1"?" checked":"")+'> 1 side</label>'
+                  +     '<label><input type="radio" name="'+sidesName+'" value="2"'+(sidesVal==="2"?" checked":"")+'> 2 sides</label>'
                   +   '</div>'
                   + '</div>';
               }
@@ -2540,19 +2566,21 @@
     var padFeeNum = autoFees.padFee;
     var woolGuardFeeNum = autoFees.woolGuardFee;
     var mothFeeNum = autoFees.mothFee;
-    // Soak's fee comes from its own (editable) box, not straight from autoFees — the shop
-    // may have manually overridden the suggested amount, and that override is what gets saved.
+    // Soak and Pet Stain both come from their own (editable, fully manual) boxes, not
+    // straight from autoFees — whatever the shop typed in is what gets saved.
     var soakFeeNum = parseFloat(g("soakFeeView"))||0;
+    var petFeeNum = parseFloat(g("petFee"))||0;
     var otherFeeNum = parseFloat(g("otherFee"))||0;
     var taxOn = !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked);
     o.pdFee = pdActive ? pdFeeVal : 0;
     o.deliveryDateTime = pdActive ? g("deliveryDateTime") : "";
-    var subtotalNum = cleaningFeeNum + padFeeNum + soakFeeNum + woolGuardFeeNum + mothFeeNum + otherFeeNum + o.pdFee;
+    var subtotalNum = cleaningFeeNum + padFeeNum + soakFeeNum + woolGuardFeeNum + mothFeeNum + petFeeNum + otherFeeNum + o.pdFee;
     o.cleaningFee = +cleaningFeeNum.toFixed(2);
     o.padFee = +padFeeNum.toFixed(2);
     o.soakFee = +soakFeeNum.toFixed(2);
     o.woolGuardFee = +woolGuardFeeNum.toFixed(2);
     o.mothFee = +mothFeeNum.toFixed(2);
+    o.petFee = +petFeeNum.toFixed(2);
     o.otherFee = +otherFeeNum.toFixed(2);
     o.subtotal = +subtotalNum.toFixed(2);
     o.taxEnabled = taxOn;
@@ -2597,7 +2625,7 @@
       ],
       addons:"",
       cancelReason:"", canceledAt:null, statusBeforeCancel:null,
-      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, padFee:0, soakFee:0, woolGuardFee:0, mothFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, deliveryDateTime:"", notes:"" };
+      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, padFee:0, soakFee:0, woolGuardFee:0, mothFee:0, petFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, deliveryDateTime:"", notes:"" };
   }
   function getOrder(id){ return state.orders.filter(function(o){return o.id===id;})[0] || null; }
 
@@ -2692,8 +2720,9 @@
     +       (Number(o.soakFee)?'<div class="line"><span>Soak fee</span><span class="mono">'+money(o.soakFee)+'</span></div>':'')
     +       (Number(o.woolGuardFee)?'<div class="line"><span>Wool Guard fee</span><span class="mono">'+money(o.woolGuardFee)+'</span></div>':'')
     +       (Number(o.mothFee)?'<div class="line"><span>Moth fee</span><span class="mono">'+money(o.mothFee)+'</span></div>':'')
-    +       (Number(o.otherFee)?'<div class="line"><span>Other services fee</span><span class="mono">'+money(o.otherFee)+'</span></div>':'')
+    +       (Number(o.petFee)?'<div class="line"><span>Pet Stain fee</span><span class="mono">'+money(o.petFee)+'</span></div>':'')
     +       (o.pdFee?'<div class="line"><span>Pickup &amp; delivery fee</span><span class="mono">'+money(o.pdFee)+'</span></div>':'')
+    +       (Number(o.otherFee)?'<div class="line"><span>Other services fee</span><span class="mono">'+money(o.otherFee)+'</span></div>':'')
     +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
     +       '<div class="line"><span>Sales tax'+(o.taxEnabled?' (7.5%)':' (not applied)')+'</span><span class="mono">'+money(taxAmt(o))+'</span></div>'
     +       '<div class="line"><span>Total</span><span class="mono">'+money(o.cost)+'</span></div>'
@@ -2837,8 +2866,9 @@
       (Number(o.soakFee)?"  Soak fee                   "+money(o.soakFee)+"\n":"")+
       (Number(o.woolGuardFee)?"  Wool Guard fee             "+money(o.woolGuardFee)+"\n":"")+
       (Number(o.mothFee)?"  Moth fee                   "+money(o.mothFee)+"\n":"")+
-      (Number(o.otherFee)?"  Other services fee         "+money(o.otherFee)+"\n":"")+
+      (Number(o.petFee)?"  Pet Stain fee              "+money(o.petFee)+"\n":"")+
       (o.pdFee?"  Pickup & delivery fee      "+money(o.pdFee)+"\n":"")+
+      (Number(o.otherFee)?"  Other services fee         "+money(o.otherFee)+"\n":"")+
       "  Subtotal                    "+money(o.subtotal)+"\n"+
       "  Sales tax"+(o.taxEnabled?" (7.5%)":" (n/a)")+"                "+money(taxAmt(o))+"\n"+
       "  "+boldUnicode("TOTAL")+"                        "+boldUnicode(money(o.cost))+"\n"+
@@ -2941,8 +2971,9 @@
     +     (Number(o.soakFee)?'<div class="pline"><span>Soak fee</span><span>'+money(o.soakFee)+'</span></div>':'')
     +     (Number(o.woolGuardFee)?'<div class="pline"><span>Wool Guard fee</span><span>'+money(o.woolGuardFee)+'</span></div>':'')
     +     (Number(o.mothFee)?'<div class="pline"><span>Moth fee</span><span>'+money(o.mothFee)+'</span></div>':'')
-    +     (Number(o.otherFee)?'<div class="pline"><span>Other services fee</span><span>'+money(o.otherFee)+'</span></div>':'')
+    +     (Number(o.petFee)?'<div class="pline"><span>Pet Stain fee</span><span>'+money(o.petFee)+'</span></div>':'')
     +     (o.pdFee?'<div class="pline"><span>Pickup &amp; delivery fee</span><span>'+money(o.pdFee)+'</span></div>':'')
+    +     (Number(o.otherFee)?'<div class="pline"><span>Other services fee</span><span>'+money(o.otherFee)+'</span></div>':'')
     +     '<div class="pline"><span>Subtotal</span><span>'+money(o.subtotal)+'</span></div>'
     +     '<div class="pline"><span>Sales tax'+(o.taxEnabled?' (7.5% NC)':' (not applied)')+'</span><span>'+money(taxAmt(o))+'</span></div>'
     +     '<div class="pline"><span>Total</span><span>'+money(o.cost)+'</span></div>'
@@ -3271,9 +3302,17 @@
     + '</div>'
 
     + '<div class="settings-block">'
+    +   '<h3>Pet Stain</h3>'
+    +   '<p class="desc">Fully custom pricing, entered fresh by hand on every order in its own Cost box \u2014 this is just a reference starting point and doesn\u2019t auto-fill anything.</p>'
+    +   '<div class="grid thirds">'
+    +     '<div class="field"><label>Reference price</label><div class="money-wrap" style="max-width:150px"><input type="number" step="0.01" min="0" class="svcPriceInput" data-key="petFee" value="'+(sp.petFee!==""&&sp.petFee!=null?esc(sp.petFee):"")+'" placeholder="0.00"></div></div>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="settings-block">'
     +   '<h3>Pickup &amp; Delivery</h3>'
     +   '<p class="desc">Flat fee by distance. The Local rate pre-fills automatically on an order as soon as Pickup &amp; Delivery is checked on any rug \u2014 still editable for the Extended (10+ mile) tier.</p>'
-    +   '<div class="grid thirds">'
+    +   '<div class="grid thirds">' 
     +     '<div class="field"><label>Local</label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcPdLocal" value="'+esc(sp.pickupDelivery.local)+'"></div></div>'
     +     '<div class="field"><label>Extended <span class="hint">10+ miles</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcPdExtended" value="'+esc(sp.pickupDelivery.extended)+'"></div></div>'
     +   '</div>'
@@ -3415,21 +3454,21 @@
     var fileSuffix = fileParts.length ? "-"+fileParts.join("-") : "";
     var rangeLabel = labelParts.length ? " ("+labelParts.join(", ")+")" : "";
 
-    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Wash/Cleaning Fee","Pad Fee","Soak Fee","Wool Guard Fee","Moth Fee","Other Fee","PD Fee","Subtotal","Tax","Total","Discount %","Prepay","Final Balance Due"];
+    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Wash/Cleaning Fee","Pad Fee","Soak Fee","Wool Guard Fee","Moth Fee","Pet Stain Fee","PD Fee","Other Fee","Subtotal","Tax","Total","Discount %","Prepay","Final Balance Due"];
     var rows = scoped.map(function(o){
       var rugText = activeRugs(o).map(function(rr){
         return "Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+": "+(rugDescText(rr)||"");
       }).join(" | ");
       return [o.number,statusLabel(o.status),orderServiceSummary(o),o.customer.name,fmtPhoneDisplay(o.customer.phone),o.customer.email,
         rugText.replace(/\s+/g," "),o.dropoffDate,o.readyDate,
-        Number(o.cleaningFee)||0, Number(o.padFee)||0, Number(o.soakFee)||0, Number(o.woolGuardFee)||0, Number(o.mothFee)||0, Number(o.otherFee)||0, Number(o.pdFee)||0,
+        Number(o.cleaningFee)||0, Number(o.padFee)||0, Number(o.soakFee)||0, Number(o.woolGuardFee)||0, Number(o.mothFee)||0, Number(o.petFee)||0, Number(o.pdFee)||0, Number(o.otherFee)||0,
         Number(o.subtotal)||0, taxAmt(o),
         Number(o.cost)||0, Number(o.discountPct)||0, Number(o.deposit)||0, balance(o)];
     });
     // Column indexes (0-based) that hold dollar amounts vs. the one percent column —
     // reused by exportCSV for fixed-decimal formatting and by exportXLSX for cell number formats.
     return { head: head, rows: rows, fileSuffix: fileSuffix, rangeLabel: rangeLabel,
-      moneyCols: [9,10,11,12,13,14,15,16,17,18,20,21], pctCol: 19 };
+      moneyCols: [9,10,11,12,13,14,15,16,17,18,19,21,22], pctCol: 20 };
   }
   function exportCSV(){
     var d = buildExportData();
