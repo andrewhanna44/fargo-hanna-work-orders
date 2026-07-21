@@ -472,7 +472,7 @@
   .pd-panel .pd-panel-sub{ font-size:12px; color:var(--ink-soft); margin:0 0 18px; padding-bottom:16px; border-bottom:1px solid var(--line-soft); }
 
   /* ---------- Price disclaimer ---------- */
-  .price-note{ font-size:12px; color:var(--ink-soft); font-style:italic; line-height:1.45; margin-top:10px; padding-top:10px; border-top:1px dotted var(--line-soft); }
+  .price-note{ font-size:12px; color:var(--ink-soft); font-style:italic; font-weight:700; line-height:1.45; margin-top:10px; padding-top:10px; border-top:1px dotted var(--line-soft); }
 
   /* ---------- Print document (hidden on screen) ---------- */
   #print-root{ display:none; }
@@ -481,7 +481,7 @@
     @page{ margin:9mm; }
     #app{ display:none !important; }
     #print-root{ display:block !important; }
-    body{ background:#fff; font-size:13px; }
+    body{ background:#fff; font-size:14px; }
     .print-doc{ color:#000; font-family:var(--display); }
     .guard{ height:5px; background:
       repeating-linear-gradient(45deg,#7e2b34 0,#7e2b34 5px,#fff 5px,#fff 10px);
@@ -489,24 +489,22 @@
     .print-letterhead{ display:flex; align-items:center; gap:14px; padding:3px 0 8px; border-bottom:1px solid #ccc; margin-bottom:6px; }
     .print-letterhead img{ width:110px; height:auto; flex:0 0 auto; display:block; }
     .print-letterhead .lh-text{ text-align:left; }
-    .print-letterhead .lh-text .shopname{ font-family:var(--display); font-size:15.5px; font-weight:700; color:#000; line-height:1.2; }
-    .print-letterhead .contact{ font-family:var(--body); font-size:10.5px; color:#333; margin-top:3px; line-height:1.55; }
+    .print-letterhead .lh-text .shopname{ font-family:var(--display); font-size:16.5px; font-weight:700; color:#000; line-height:1.2; }
+    .print-letterhead .contact{ font-family:var(--body); font-size:11.5px; color:#333; margin-top:3px; line-height:1.55; }
     .print-title{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid #000; padding-bottom:4px; margin:10px 0 9px; }
-    .print-title h2{ font-size:15.5px; margin:0; }
-    .print-title .pnum{ font-family:var(--mono); font-size:12.5px; }
-    .print-cols{ display:grid; grid-template-columns:1fr 1fr; gap:18px; font-family:var(--body); font-size:11.5px; }
-    .print-cols h3{ font-family:var(--body); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 5px; }
+    .print-title h2{ font-size:16.5px; margin:0; }
+    .print-title .pnum{ font-family:var(--mono); font-size:13.5px; }
+    .print-cols{ display:grid; grid-template-columns:1fr 1fr; gap:18px; font-family:var(--body); font-size:12.5px; }
+    .print-cols h3{ font-family:var(--body); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 5px; }
     .print-cols .pline{ display:flex; justify-content:space-between; padding:1.5px 0; }
     .print-cols .pline .pl{ color:#555; }
-    .print-notes{ font-family:var(--body); font-size:11.5px; margin-top:8px; }
-    .print-notes h3{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 3px; }
+    .print-notes{ font-family:var(--body); font-size:12.5px; margin-top:8px; }
+    .print-notes h3{ font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; border-bottom:1px solid #999; padding-bottom:3px; margin:0 0 3px; }
     .print-money{ font-family:var(--body); margin-top:9px; border:1px solid #000; }
-    .print-money .pline{ display:flex; justify-content:space-between; padding:4px 10px; font-size:11.5px; border-bottom:1px solid #ccc; }
-    .print-money .pline:last-child{ border-bottom:0; font-weight:700; font-size:13px; background:#f2f2f2; }
-    .print-disclaimer{ font-family:var(--body); font-size:9px; font-style:italic; color:#555; margin-top:6px; line-height:1.25; }
-    .print-sign{ display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:20px; font-family:var(--body); font-size:10.5px; }
-    .print-sign .sig{ border-top:1px solid #000; padding-top:3px; color:#444; }
-    .print-foot{ text-align:center; font-family:var(--body); font-size:9.5px; color:#777; margin-top:12px; border-top:1px solid #ccc; padding-top:5px; }
+    .print-money .pline{ display:flex; justify-content:space-between; padding:4px 10px; font-size:12.5px; border-bottom:1px solid #ccc; }
+    .print-money .pline:last-child{ border-bottom:0; font-weight:700; font-size:14px; background:#f2f2f2; }
+    .print-disclaimer{ font-family:var(--body); font-size:10px; font-style:italic; font-weight:700; color:#555; margin-top:6px; line-height:1.3; }
+    .print-foot{ text-align:center; font-family:var(--body); font-size:10.5px; color:#777; margin-top:16px; border-top:1px solid #ccc; padding-top:5px; }
   }
 
   @media (max-width:820px){
@@ -604,19 +602,30 @@
 
   // Old orders had a single `item` object. Migrate to a `rugs` array (up to 4) + a top-level `addons` field.
   function blankServices(){
-    return { cleaning:false, repair:false, pad:false, padType:"", pickupDelivery:false,
-      digester:false, storage:false, appraisal:false, woolGuard:false, moth:false,
+    return { cleaning:false, repair:false, repairText:"", pad:false, padType:"", padSize:"", pickupDelivery:false,
+      digester:false, storage:false, storageText:"", appraisal:false, appraisalText:"",
+      woolGuard:false, woolGuardSides:"", moth:false, mothSides:"",
       misc:false, miscText:"" };
   }
   function migrateOrderShape(o){
     if(!o.rugs){
       var it = o.item || {};
-      o.rugs = [{ description: it.description||"", dimensions: it.dimensions||"", marks:[] }];
-      while(o.rugs.length < 4) o.rugs.push({ description:"", dimensions:"", marks:[] });
+      o.rugs = [{ itemDescription: it.description||"", workNeeded:"", dimensions: it.dimensions||"", marks:[] }];
+      while(o.rugs.length < 4) o.rugs.push({ itemDescription:"", workNeeded:"", dimensions:"", marks:[] });
       if(o.addons === undefined) o.addons = it.addons || "";
     }
-    while(o.rugs.length < 4) o.rugs.push({ description:"", dimensions:"", marks:[] });
+    while(o.rugs.length < 4) o.rugs.push({ itemDescription:"", workNeeded:"", dimensions:"", marks:[] });
     o.rugs.forEach(function(r){ if(!Array.isArray(r.marks)) r.marks = []; });
+    // Rugs used to carry a single combined "description" field. Split-in-place: the old
+    // text becomes Item description, and Work needed starts blank for the shop to fill in.
+    // The old key is left alone (harmless) rather than deleted, in case anything else
+    // still reads it — nothing in the app does anymore, but this keeps the migration safe.
+    o.rugs.forEach(function(r){
+      if(r.itemDescription === undefined){
+        r.itemDescription = r.description || "";
+        r.workNeeded = "";
+      }
+    });
     // Every rug now carries its own checkbox-based services (cleaning/repair/pad/etc).
     // Older orders only had a single order-level o.type — migrate that onto rug 1 so
     // historical reporting still shows something sensible.
@@ -625,8 +634,17 @@
         r.services = blankServices();
         if(i === 0 && o.type && r.services[o.type] !== undefined) r.services[o.type] = true;
       }
+      if(r.services.padSize === undefined) r.services.padSize = "";
+      if(r.services.woolGuardSides === undefined) r.services.woolGuardSides = "";
+      if(r.services.mothSides === undefined) r.services.mothSides = "";
+      DESC_BOX_SERVICE_KEYS.forEach(function(key){
+        if(r.services[key+"Text"] === undefined) r.services[key+"Text"] = "";
+      });
     });
     if(o.pdFee === undefined || o.pdFee === null || o.pdFee === "") o.pdFee = 0;
+    if(o.soakFee === undefined || o.soakFee === null || o.soakFee === "") o.soakFee = 0;
+    if(o.woolGuardFee === undefined || o.woolGuardFee === null || o.woolGuardFee === "") o.woolGuardFee = 0;
+    if(o.mothFee === undefined || o.mothFee === null || o.mothFee === "") o.mothFee = 0;
     if(o.customerId === undefined) o.customerId = null;
     if(o.cancelReason === undefined) o.cancelReason = "";
     if(o.canceledAt === undefined) o.canceledAt = null;
@@ -810,32 +828,36 @@
     }
     if(state.view === "settings") renderSettings();
   }
-  // Real shop price sheet (Fargo-Hanna Rug Care Center). Cleaning and Pad are priced per
-  // square foot and calculated automatically from each rug's Size field; Cleaning also
-  // carries a per-rug minimum fee. Pickup & Delivery has two flat tiers (Local pre-fills
-  // automatically on an order; Extended is for the 10-mile-plus range and stays editable).
-  // Everything else is a flat fee entered manually until pricing is finalized. `retail`
-  // holds counter/consumable items that are reference pricing only for this first pass —
-  // not yet wired into per-order auto-calculation.
+  // Real shop price sheet (Fargo-Hanna Rug Care Center). Wash/Cleaning, Soak, Wool Guard,
+  // and Moth Treatment are all priced per square foot and calculated automatically from
+  // each rug's own Size field (Pad is also per-square-foot but off its own independent
+  // size field). Wash/Cleaning and Soak each carry a per-rug minimum fee; Wool Guard and
+  // Moth have two rates depending on whether 1 or 2 sides are treated. Pickup & Delivery
+  // has two flat tiers (Local pre-fills automatically on an order; Extended is for the
+  // 10-mile-plus range and stays editable). Everything else (Repair, Storage, Appraisal,
+  // Miscellaneous) is custom in-store pricing entered manually via the Other Services Fee
+  // field on an order.
   var DEFAULT_SERVICE_PRICES = {
     cleaning: { rate:3, minimum:95 },
     repair: "",
     pad: { types: { "Durahold":1.75, "Cushion Air":1.50, "No Muv":1.75, "Moisture Lock (thin)":1.25 } },
     pickupDelivery: { local:150, extended:175 },
-    digester: "",
+    digester: { rate:1.50, minimum:45 },
     storage: "",
     appraisal: "",
-    woolGuard: "",
-    moth: "",
-    misc: "",
-    retail: { "SLA Protectant Spray":"", "Moth Repellent Spray":"", "Dri Air Deodorizer":"" }
+    woolGuard: { rate1:0.30, rate2:0.55 },
+    moth: { rate1:0.30, rate2:0.55 },
+    misc: ""
   };
-  // Upgrades an old flat-number servicePrices object (cleaning/pad/pickupDelivery used to
-  // be plain numbers) into the new nested shape above, without losing whatever the shop
-  // already had saved. Safe to run on a brand-new settings object too.
+  // Upgrades an old flat-number servicePrices object (cleaning/pad/pickupDelivery/digester/
+  // woolGuard/moth used to be plain numbers or blank strings) into the new nested shape
+  // above, without losing whatever the shop already had saved. Safe to run on a brand-new
+  // settings object too. Old `retail` data (if present from a pre-this-version backup) is
+  // simply dropped — that section has been removed.
   function migrateServicePrices(sp){
     sp = sp || {};
     var out = Object.assign({}, DEFAULT_SERVICE_PRICES, sp);
+    delete out.retail;
     if(sp.cleaning && typeof sp.cleaning === "object"){
       out.cleaning = Object.assign({}, DEFAULT_SERVICE_PRICES.cleaning, sp.cleaning);
     } else {
@@ -852,7 +874,23 @@
     } else {
       out.pickupDelivery = Object.assign({}, DEFAULT_SERVICE_PRICES.pickupDelivery);
     }
-    out.retail = Object.assign({}, DEFAULT_SERVICE_PRICES.retail, sp.retail || {});
+    // digester (Soak) used to be a blank/flat manual value — any old non-object value is
+    // discarded in favor of the new rate+minimum defaults, since it doesn't map onto them.
+    if(sp.digester && typeof sp.digester === "object"){
+      out.digester = Object.assign({}, DEFAULT_SERVICE_PRICES.digester, sp.digester);
+    } else {
+      out.digester = Object.assign({}, DEFAULT_SERVICE_PRICES.digester);
+    }
+    if(sp.woolGuard && typeof sp.woolGuard === "object"){
+      out.woolGuard = Object.assign({}, DEFAULT_SERVICE_PRICES.woolGuard, sp.woolGuard);
+    } else {
+      out.woolGuard = Object.assign({}, DEFAULT_SERVICE_PRICES.woolGuard);
+    }
+    if(sp.moth && typeof sp.moth === "object"){
+      out.moth = Object.assign({}, DEFAULT_SERVICE_PRICES.moth, sp.moth);
+    } else {
+      out.moth = Object.assign({}, DEFAULT_SERVICE_PRICES.moth);
+    }
     return out;
   }
   // Hardcoded so a brand-new browser (or a fresh GitHub Pages deploy) always shows the
@@ -880,6 +918,12 @@
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.settings)); } catch(e){}
   }
 
+  // Services that get a plain free-text description box under their checkbox when checked.
+  // Pickup & Delivery, Cleaning, Pad, and Misc are excluded — they already have their own
+  // dedicated sub-fields (fee unlock, size/type pickers, misc text) elsewhere.
+  // (Defined here, before state init, since migrateOrderShape() — run during loadOrders()
+  // as part of building the initial state object below — depends on it.)
+  var DESC_BOX_SERVICE_KEYS = ["repair","storage","appraisal"];
   var state = {
     view: "list",
     selectedId: null,
@@ -893,6 +937,8 @@
     pickupAppts: loadPickupAppts(),
     custSearch: "",
     custFormId: null,   // null = list only, "new" = add form, or a customer id = edit form
+    custOrdersId: null,  // customer id currently shown on the customer work-order history page
+    detailReturnView: "list",  // where the order detail page's back button returns to
     settings: loadSettings(),
     editingShopDetails: false,   // gates the Shop details block on Backup & settings behind an Edit button
     backup: {
@@ -956,62 +1002,113 @@
     return feet+"'"+(inches? " "+inches+'"':"");
   }
   // Top-level (not nested in renderForm) so both the live form recalc AND submitForm() can
-  // call it — sums Cleaning and Pad fees across every rug, reading each rug's Size field
-  // (and, for Pad, its selected pad type) straight from the currently-rendered form, and
-  // updates the live sq-ft hint. Cleaning applies the shop's per-rug minimum fee; Pad has no
-  // minimum. Returns {cleaningFee, padFee}.
+  // call it — sums Wash/Cleaning, Pad, Soak, Wool Guard, and Moth fees across every rug,
+  // reading each rug's Size field (and, for Pad, its own separate size + selected pad type;
+  // for Wool Guard/Moth, the 1-side/2-side pick) straight from the currently-rendered form,
+  // and updates the live sq-ft hint. Wash/Cleaning and Soak each apply the shop's per-rug
+  // minimum fee; Pad, Wool Guard, and Moth have no minimum. Returns {cleaningFee, padFee,
+  // soakFee, woolGuardFee, mothFee}.
   function computeAutoFees(){
     var sp = state.settings.servicePrices || {};
     var cleaningCfg = sp.cleaning || DEFAULT_SERVICE_PRICES.cleaning;
     var padCfg = sp.pad || DEFAULT_SERVICE_PRICES.pad;
+    var soakCfg = sp.digester || DEFAULT_SERVICE_PRICES.digester;
+    var wgCfg = sp.woolGuard || DEFAULT_SERVICE_PRICES.woolGuard;
+    var mothCfg = sp.moth || DEFAULT_SERVICE_PRICES.moth;
     var rate = Number(cleaningCfg.rate)||0;
     var minimum = Number(cleaningCfg.minimum)||0;
-    var cleaningTotal = 0, padTotal = 0;
+    var soakRate = Number(soakCfg.rate)||0;
+    var soakMin = Number(soakCfg.minimum)||0;
+    var cleaningTotal = 0, padTotal = 0, soakTotal = 0, wgTotal = 0, mothTotal = 0;
     [1,2,3,4].forEach(function(n){
       var hintEl = main.querySelector("#rug"+n+"_sqftHint");
       var dimEl = main.querySelector("#rug"+n+"_dim");
       var cleanCb = main.querySelector("#rug"+n+"_svc_cleaning");
       var padCb = main.querySelector("#rug"+n+"_svc_pad");
       var padTypeEl = main.querySelector("#rug"+n+"_padType");
+      var padSizeEl = main.querySelector("#rug"+n+"_padSize");
+      var soakCb = main.querySelector("#rug"+n+"_svc_digester");
+      var wgCb = main.querySelector("#rug"+n+"_svc_woolGuard");
+      var mothCb = main.querySelector("#rug"+n+"_svc_moth");
+      var wgSidesEl = main.querySelector('input[name="rug'+n+'_woolGuardSides"]:checked');
+      var mothSidesEl = main.querySelector('input[name="rug'+n+'_mothSides"]:checked');
       if(!dimEl) return;
-      if(!dimEl.value){
-        if(hintEl) hintEl.textContent = "";
-        return;
+
+      // Wash/Cleaning, Soak, Wool Guard, and Moth are all priced off the rug's own Size field.
+      var dims = dimEl.value ? parseRugDimensions(dimEl.value) : null;
+      var rawCleanFee = 0, cleanFee = 0;
+      if(dims && cleanCb && cleanCb.checked){
+        rawCleanFee = dims.sqft * rate;
+        cleanFee = Math.max(rawCleanFee, minimum);
       }
-      var dims = parseRugDimensions(dimEl.value);
-      if(!dims){
-        if(hintEl){
-          hintEl.style.color = "var(--madder)";
-          hintEl.textContent = ((cleanCb && cleanCb.checked) || (padCb && padCb.checked))
-            ? "Enter size as e.g. 8x9.9 so pricing can be calculated automatically"
-            : "Couldn\u2019t read this size \u2014 try e.g. 8x9.9";
-        }
-        return;
+      var rawSoakFee = 0, soakFee = 0;
+      if(dims && soakCb && soakCb.checked){
+        rawSoakFee = dims.sqft * soakRate;
+        soakFee = Math.max(rawSoakFee, soakMin);
       }
-      var rawCleanFee = dims.sqft * rate;
-      var cleanFee = (cleanCb && cleanCb.checked) ? Math.max(rawCleanFee, minimum) : 0;
-      var padRate = (padTypeEl && padTypeEl.value) ? Number((padCfg.types||{})[padTypeEl.value])||0 : 0;
-      var padFee = (padCb && padCb.checked) ? dims.sqft * padRate : 0;
+      var wgFee = 0;
+      if(dims && wgCb && wgCb.checked && wgSidesEl){
+        var wgRate = wgSidesEl.value === "2" ? Number(wgCfg.rate2)||0 : Number(wgCfg.rate1)||0;
+        wgFee = dims.sqft * wgRate;
+      }
+      var mothFee = 0;
+      if(dims && mothCb && mothCb.checked && mothSidesEl){
+        var mothRate = mothSidesEl.value === "2" ? Number(mothCfg.rate2)||0 : Number(mothCfg.rate1)||0;
+        mothFee = dims.sqft * mothRate;
+      }
+
+      // Pad is priced off its OWN size field — the pad piece isn't necessarily the same
+      // size as the rug (e.g. a runner might sit on a wider pad remnant, or vice versa).
+      var padDims = (padSizeEl && padSizeEl.value) ? parseRugDimensions(padSizeEl.value) : null;
+      var padFee = 0;
+      if(padDims && padCb && padCb.checked && padTypeEl && padTypeEl.value){
+        var padRate = Number((padCfg.types||{})[padTypeEl.value])||0;
+        padFee = padDims.sqft * padRate;
+      }
+
       if(hintEl){
-        hintEl.style.color = "var(--ink-soft)";
-        var parts = [dims.sqft.toFixed(1)+" sq ft"];
-        if(cleanCb && cleanCb.checked) parts.push("cleaning "+money(cleanFee)+((rawCleanFee < minimum) ? " (min applies)" : ""));
-        if(padCb && padCb.checked){
-          parts.push(padTypeEl && padTypeEl.value ? "pad "+money(padFee) : "pick a pad type to price pad");
+        var parts = [];
+        var anyErr = false;
+        if(dimEl.value && !dims){
+          anyErr = true;
+          parts.push((cleanCb && cleanCb.checked) ? "Enter size as e.g. 8x9.9 so cleaning can be priced" : "Couldn\u2019t read this size \u2014 try e.g. 8x9.9");
+        } else if(dims){
+          parts.push(dims.sqft.toFixed(1)+" sq ft rug");
+          if(cleanCb && cleanCb.checked) parts.push("wash/cleaning "+money(cleanFee)+((rawCleanFee < minimum) ? " (min applies)" : ""));
+          if(soakCb && soakCb.checked) parts.push("soak suggested "+money(soakFee)+((rawSoakFee < soakMin) ? " (min applies)" : ""));
         }
-        hintEl.textContent = "\u2248 "+parts.join("  \u00b7  ");
+        if(padCb && padCb.checked){
+          if(!padSizeEl || !padSizeEl.value) parts.push("enter pad size to price pad");
+          else if(!padDims){ anyErr = true; parts.push("pad size unreadable \u2014 try e.g. 8x9.9"); }
+          else if(!padTypeEl || !padTypeEl.value) parts.push("pick a pad type ("+padDims.sqft.toFixed(1)+" sq ft pad)");
+          else parts.push("pad "+money(padFee)+" ("+padDims.sqft.toFixed(1)+" sq ft)");
+        }
+        if(wgCb && wgCb.checked && dims){
+          if(!wgSidesEl){ anyErr = true; parts.push("pick 1 or 2 sides for wool guard"); }
+          else parts.push("wool guard "+money(wgFee));
+        }
+        if(mothCb && mothCb.checked && dims){
+          if(!mothSidesEl){ anyErr = true; parts.push("pick 1 or 2 sides for moth"); }
+          else parts.push("moth "+money(mothFee));
+        }
+        hintEl.style.color = anyErr ? "var(--madder)" : "var(--ink-soft)";
+        hintEl.textContent = parts.length ? "\u2248 "+parts.join("  \u00b7  ") : "";
       }
+
       cleaningTotal += cleanFee;
       padTotal += padFee;
+      soakTotal += soakFee;
+      wgTotal += wgFee;
+      mothTotal += mothFee;
     });
-    return { cleaningFee: cleaningTotal, padFee: padTotal };
+    return { cleaningFee: cleaningTotal, padFee: padTotal, soakFee: soakTotal, woolGuardFee: wgTotal, mothFee: mothTotal };
   }
   var SERVICE_DEFS = [
-    {key:"cleaning", label:"Cleaning"},
+    {key:"cleaning", label:"Wash/Cleaning"},
     {key:"repair", label:"Repair"},
     {key:"pad", label:"Pad"},
     {key:"pickupDelivery", label:"Pickup & Delivery"},
-    {key:"digester", label:"Digester"},
+    {key:"digester", label:"Soak"},
     {key:"storage", label:"Storage"},
     {key:"appraisal", label:"Appraisal"},
     {key:"woolGuard", label:"Wool Guard"},
@@ -1024,9 +1121,34 @@
     var out = [];
     SERVICE_DEFS.forEach(function(d){
       if(!svc[d.key]) return;
-      if(d.key === "pad") out.push("Pad"+(svc.padType?" ("+svc.padType+")":""));
+      if(d.key === "pad") out.push("Pad"+(svc.padType?" ("+svc.padType+(svc.padSize?" \u2014 "+svc.padSize:"")+")":""));
       else if(d.key === "misc") out.push("Misc"+(svc.miscText?" ("+svc.miscText+")":""));
+      else if(d.key === "woolGuard") out.push(d.label+(svc.woolGuardSides?" ("+svc.woolGuardSides+" side"+(svc.woolGuardSides==="2"?"s":"")+")":""));
+      else if(d.key === "moth") out.push(d.label+(svc.mothSides?" ("+svc.mothSides+" side"+(svc.mothSides==="2"?"s":"")+")":""));
+      else if(DESC_BOX_SERVICE_KEYS.indexOf(d.key) !== -1){
+        var txt = svc[d.key+"Text"];
+        out.push(d.label+(txt?" ("+txt+")":""));
+      }
       else out.push(d.label);
+    });
+    return out;
+  }
+  // Same per-service data as rugServiceLabels(), but split into {label, desc} pairs
+  // instead of one combined string — used by the print copy, which wants the service
+  // type in bold and its detail (pad type/size, sides treated, custom description) in
+  // the smaller grey note font, rather than parenthetical inline text.
+  function printServiceLines(rr){
+    var svc = (rr && rr.services) || {};
+    var out = [];
+    SERVICE_DEFS.forEach(function(d){
+      if(!svc[d.key]) return;
+      var desc = "";
+      if(d.key === "pad") desc = svc.padType ? (svc.padType+(svc.padSize?" \u2014 "+svc.padSize:"")) : "";
+      else if(d.key === "misc") desc = svc.miscText || "";
+      else if(d.key === "woolGuard") desc = svc.woolGuardSides ? (svc.woolGuardSides+" side"+(svc.woolGuardSides==="2"?"s":"")) : "";
+      else if(d.key === "moth") desc = svc.mothSides ? (svc.mothSides+" side"+(svc.mothSides==="2"?"s":"")) : "";
+      else if(DESC_BOX_SERVICE_KEYS.indexOf(d.key) !== -1) desc = svc[d.key+"Text"] || "";
+      out.push({ label: d.label, desc: desc });
     });
     return out;
   }
@@ -1050,6 +1172,12 @@
       "Ready for Pickup":{cls:"ready"}, "Picked Up":{cls:"picked"}, "Canceled":{cls:"canceled"}
     })[s] || {cls:"new"};
   }
+  // Display-only label mapping — the internal status VALUE stays "Picked Up" everywhere
+  // (filters, comparisons, stored data) so nothing else has to change; this just controls
+  // what the user sees, marking full completion (picked up AND paid).
+  function statusLabel(s){
+    return s === "Picked Up" ? "Paid & Picked Up" : s;
+  }
   var STATUSES = ["New","In Progress","Ready for Pickup","Picked Up"];
   var STATUS_GROUPS = STATUSES.concat(["Canceled"]); // used for bucket cards & grouped list — Canceled is reached only via the dedicated Cancel button, not the status pills
 
@@ -1061,18 +1189,27 @@
   function taxAmt(o){ return o.taxEnabled ? taxableAmt(o)*TAX_RATE : 0; }
   function balance(o){ return (Number(o.cost)||0) - (Number(o.deposit)||0); }
 
-  // Returns the rugs on an order that actually have something entered, as {n, description, dimensions, marks, services}.
+  // Returns the rugs on an order that actually have something entered, as
+  // {n, itemDescription, workNeeded, dimensions, marks, services}.
   function activeRugs(o){
     var out = [];
     (o.rugs||[]).forEach(function(r,i){
       var marks = r.marks || [];
       var svc = r.services || {};
       var hasService = Object.keys(svc).some(function(k){ return svc[k] === true; });
-      if((r.description && r.description.trim()) || (r.dimensions && r.dimensions.trim()) || marks.length || hasService){
-        out.push({ n:i+1, description:r.description||"", dimensions:r.dimensions||"", marks:marks, services:svc });
+      if((r.itemDescription && r.itemDescription.trim()) || (r.workNeeded && r.workNeeded.trim()) || (r.dimensions && r.dimensions.trim()) || marks.length || hasService){
+        out.push({ n:i+1, itemDescription:r.itemDescription||"", workNeeded:r.workNeeded||"", dimensions:r.dimensions||"", marks:marks, services:svc });
       }
     });
     return out;
+  }
+  // Combines Item description + Work needed into one line for contexts with limited room
+  // (email, CSV, print rug notes) — e.g. "Persian Tabriz, 100% wool \u2014 wine stain, fringe wear".
+  function rugDescText(rr){
+    var parts = [];
+    if(rr.itemDescription) parts.push(rr.itemDescription);
+    if(rr.workNeeded) parts.push(rr.workNeeded);
+    return parts.join(" \u2014 ");
   }
 
   /* ---------------- Customer database ---------------- */
@@ -1254,13 +1391,14 @@
     updateNavCount();
     if(state.view!=="new" && state.view!=="edit") currentFormDraftSaver = null;
     document.querySelectorAll(".nav-btn").forEach(function(b){
-      b.classList.toggle("active", b.dataset.nav === (state.view==="detail"||state.view==="edit" ? "list" : state.view));
+      b.classList.toggle("active", b.dataset.nav === (state.view==="detail"||state.view==="edit" ? "list" : (state.view==="customerOrders" ? "customers" : state.view)));
     });
     if(state.view==="list") renderList();
     else if(state.view==="new"||state.view==="edit") renderForm();
     else if(state.view==="detail") renderDetail();
     else if(state.view==="alerts") renderAlerts();
     else if(state.view==="customers") renderCustomers();
+    else if(state.view==="customerOrders") renderCustomerOrders();
     else if(state.view==="settings") renderSettings();
     else if(state.view==="servicesMenu") renderServicesMenu();
     else if(state.view==="pickupsDeliveries") renderPickupsDeliveries();
@@ -1275,7 +1413,7 @@
     return state.orders.filter(function(o){
       if(state.filterType!=="all" && !orderHasService(o, state.filterType)) return false;
       if(!q) return true;
-      var rugText = (o.rugs||[]).map(function(r){ return r.description||""; }).join(" ");
+      var rugText = (o.rugs||[]).map(function(r){ return (r.itemDescription||"")+" "+(r.workNeeded||""); }).join(" ");
       return (o.number+" "+o.customer.name+" "+o.customer.phone+" "+o.customer.email+" "+rugText)
         .toLowerCase().indexOf(q) !== -1;
     }).sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
@@ -1299,7 +1437,7 @@
       +   '<div class="num">'+esc(o.number)+'</div>'
       +   '<div class="who">'+esc(o.customer.name)+'<small>'+esc(o.customer.phone?fmtPhoneDisplay(o.customer.phone):(o.customer.email||""))+'</small>'+flagsHtml+'</div>'
       +   '<div class="type-tag"><span class="type-pill">'+esc(orderServiceSummary(o))+'</span></div>'
-      +   '<div><span class="badge '+sm.cls+'">'+esc(o.status)+'</span></div>'
+      +   '<div><span class="badge '+sm.cls+'">'+esc(statusLabel(o.status))+'</span></div>'
       +   '<div class="cost">'+money(o.cost)+'</div>'
       + '</div>';
   }
@@ -1319,7 +1457,7 @@
       var a = alerts[s] ? '<span class="b-alert">⚑ '+alerts[s]+'</span>' : '';
       cards += '<button class="bucket-card '+bucketMeta(s)+(state.filterStatus===s?" active":"")+'" data-bucket="'+esc(s)+'">'
         + '<div class="b-count">'+(counts[s]||0)+'</div>'
-        + '<div class="b-label">'+esc(s)+a+'</div></button>';
+        + '<div class="b-label">'+esc(statusLabel(s))+a+'</div></button>';
     });
     return allBox + '<div class="buckets">'+cards+'</div>';
   }
@@ -1349,7 +1487,7 @@
           var rows = base.filter(function(o){ return o.status===s; });
           if(!rows.length) return;
           any = true;
-          html += '<div class="group-head"><span class="badge '+statusMeta(s).cls+'">'+esc(s)+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
+          html += '<div class="group-head"><span class="badge '+statusMeta(s).cls+'">'+esc(statusLabel(s))+'</span> <span class="gc">'+rows.length+' order'+(rows.length===1?"":"s")+'</span></div>';
           html += listHead;
           rows.forEach(function(o){ html += orderRowHtml(o); });
         });
@@ -1373,7 +1511,7 @@
       el.addEventListener("click", function(){ state.filterStatus = el.dataset.bucket; renderList(); });
     });
     main.querySelectorAll("[data-open]").forEach(function(el){
-      el.addEventListener("click", function(){ go("detail", el.dataset.open); });
+      el.addEventListener("click", function(){ state.detailReturnView = "list"; go("detail", el.dataset.open); });
     });
     var nb = main.querySelector('[data-nav="new"]');
     if(nb) nb.addEventListener("click", function(){ go("new"); });
@@ -1398,7 +1536,7 @@
     return ''
       + '<div class="alert-row" data-open="'+o.id+'">'
       +   '<div class="num">'+esc(o.number)+'</div>'
-      +   '<div class="who">'+esc(o.customer.name)+'<small>'+esc(o.customer.phone?fmtPhoneDisplay(o.customer.phone):(o.customer.email||""))+' · '+esc(o.status)+'</small></div>'
+      +   '<div class="who">'+esc(o.customer.name)+'<small>'+esc(o.customer.phone?fmtPhoneDisplay(o.customer.phone):(o.customer.email||""))+' · '+esc(statusLabel(o.status))+'</small></div>'
       +   '<div class="meta">'+metaText+'</div>'
       + '</div>';
   }
@@ -1464,7 +1602,7 @@
     main.innerHTML = html;
     main.querySelector("#toList").addEventListener("click", function(){ go("list"); });
     main.querySelectorAll("[data-open]").forEach(function(el){
-      el.addEventListener("click", function(){ go("detail", el.dataset.open); });
+      el.addEventListener("click", function(){ state.detailReturnView = "list"; go("detail", el.dataset.open); });
     });
   }
 
@@ -1510,7 +1648,7 @@
     main.querySelector("#addCust").addEventListener("click", function(){ state.custFormId="new"; renderCustomers(); });
     main.querySelector("#custSearch").addEventListener("input", function(e){ state.custSearch = e.target.value; refreshCustomersOnly(); });
     main.querySelectorAll("[data-cust]").forEach(function(el){
-      el.addEventListener("click", function(){ state.custFormId = el.dataset.cust; renderCustomers(); });
+      el.addEventListener("click", function(){ state.custOrdersId = el.dataset.cust; state.view = "customerOrders"; render(); });
     });
     wireCustomerForm();
   }
@@ -1542,7 +1680,11 @@
       +   '<div class="form-msg" id="custFormMsg" style="margin-top:8px"></div>'
       + '</div>';
   }
-  function wireCustomerForm(){
+  // onDone lets callers control what re-renders after Save/Cancel — the main Customers
+  // list defaults to itself, but the per-customer order-history page passes its own
+  // renderer so editing a customer there doesn't bounce you back to the list.
+  function wireCustomerForm(onDone){
+    onDone = onDone || renderCustomers;
     var saveBtn = main.querySelector("#custSave");
     if(!saveBtn) return;
     wirePhoneInput(main.querySelector("#cf_phone"));
@@ -1567,9 +1709,9 @@
       saveCustomers();
       state.custFormId = null;
       toast("Customer saved");
-      renderCustomers();
+      onDone();
     });
-    main.querySelector("#custCancel").addEventListener("click", function(){ state.custFormId = null; renderCustomers(); });
+    main.querySelector("#custCancel").addEventListener("click", function(){ state.custFormId = null; onDone(); });
     var delBtn = main.querySelector("#custDelete");
     if(delBtn) delBtn.addEventListener("click", function(){
       var c = getCustomer(state.custFormId);
@@ -1580,9 +1722,55 @@
         saveCustomers();
         state.custFormId = null;
         toast("Customer deleted");
-        renderCustomers();
+        state.view = "customers";
+        render();
       });
     });
+  }
+  function renderCustomerOrders(){
+    var c = getCustomer(state.custOrdersId);
+    if(!c){ state.view = "customers"; render(); return; }
+    var orders = state.orders.filter(function(o){ return o.customerId === c.id; })
+      .sort(function(a,b){ return (b.createdAt||"").localeCompare(a.createdAt||""); });
+
+    var html = ''
+      + '<div class="page-head"><div><h2>'+esc(c.name)+'</h2>'
+      +   '<div class="sub">'+orders.length+' service order'+(orders.length===1?"":"s")+' on file</div></div>'
+      +   '<button class="btn back" id="backToCustomers">← Back to Customers</button></div>';
+
+    if(state.custFormId === c.id){
+      html += customerFormHtml(c.id);
+    } else {
+      html += '<div class="settings-block">'
+        +   '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">'
+        +     '<h3 style="margin:0">Customer info</h3>'
+        +     '<button type="button" class="btn ghost sm" id="editCustBtn">Edit</button>'
+        +   '</div>'
+        +   '<div class="grid" style="margin-top:16px">'
+        +     kvStatic("Name", c.name)
+        +     kvStatic("Phone", fmtPhoneDisplay(c.phone))
+        +     kvStatic("Email", c.email)
+        +     kvStatic("Address", c.address)
+        +   '</div>'
+        + '</div>';
+    }
+
+    html += '<h3 style="font-family:var(--display);font-size:16px;color:var(--indigo);margin:22px 0 12px">Service order history</h3>';
+    if(!orders.length){
+      html += emptyState("No service orders yet", "Orders will show up here once you create one for "+esc(c.name)+".");
+    } else {
+      html += '<div class="list-head"><div>Order</div><div>Customer</div><div class="c-type">Type</div><div>Status</div><div class="r c-cost">Total</div></div>';
+      orders.forEach(function(o){ html += orderRowHtml(o); });
+    }
+
+    main.innerHTML = html;
+    main.querySelector("#backToCustomers").addEventListener("click", function(){ state.view = "customers"; render(); });
+    var editBtn = main.querySelector("#editCustBtn");
+    if(editBtn) editBtn.addEventListener("click", function(){ state.custFormId = c.id; renderCustomerOrders(); });
+    main.querySelectorAll("[data-open]").forEach(function(el){
+      el.addEventListener("click", function(){ state.detailReturnView = "customerOrders"; go("detail", el.dataset.open); });
+    });
+    wireCustomerForm(renderCustomerOrders);
   }
 
   /* ---------------- Form ---------------- */
@@ -1661,10 +1849,13 @@
     + '</fieldset>'
 
     + '<fieldset class="fieldset"><legend>Cost</legend>'
-    +   '<div class="hint" style="display:block;margin:-8px 0 16px">Cleaning &amp; Pad price automatically from each rug\u2019s size. Pickup &amp; delivery unlocks once checked on a rug.</div>'
+    +   '<div class="hint" style="display:block;margin:-8px 0 16px">Wash/Cleaning, Pad, Soak, Wool Guard &amp; Moth price automatically from each rug\u2019s size. Pickup &amp; delivery unlocks once checked on a rug.</div>'
     +   '<div class="grid fourths">'
-    +     '<div class="field"><label>Cleaning fee</label><div class="money-wrap"><input id="cleaningFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     '<div class="field"><label>Wash/Cleaning fee</label><div class="money-wrap"><input id="cleaningFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     '<div class="field"><label>Pad fee</label><div class="money-wrap"><input id="padFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     moneyField("Soak fee — editable","soakFeeView",(o.soakFee?o.soakFee:"0.00"),{})
+    +     '<div class="field"><label>Wool Guard fee</label><div class="money-wrap"><input id="woolGuardFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
+    +     '<div class="field"><label>Moth fee</label><div class="money-wrap"><input id="mothFeeView" value="0.00" readonly tabindex="-1" style="background:#f2efe7"></div></div>'
     +     moneyField("Other services fee","otherFee",(o.otherFee?o.otherFee:"0.00"),{})
     +     moneyField("Pickup & delivery fee","pdFee",(o.pdFee?o.pdFee:"0.00"),{})
     +   '</div>' 
@@ -1741,14 +1932,36 @@
       }
       recalcAll();
     }
+    // Soak's fee box is "unlocked": it auto-fills from the calculated rate while the shop
+    // hasn't touched it, but the moment they type into it directly, recalcAll() stops
+    // overwriting it. Unchecking Soak on every rug resets the box to 0.00 and re-arms
+    // auto-fill for next time. Starts true on an existing order that already has a Soak
+    // fee saved, so re-opening it for edits doesn't silently overwrite a manually-set value.
+    var soakManuallyEdited = editing && Number(o.soakFee) > 0;
     function recalcAll(){
       var autoFees = computeAutoFees();
       var cleaningFee = autoFees.cleaningFee;
       var padFee = autoFees.padFee;
+      var woolGuardFee = autoFees.woolGuardFee;
+      var mothFee = autoFees.mothFee;
       var otherFee = parseFloat(main.querySelector("#otherFee").value)||0;
       var feeEl = main.querySelector("#pdFee");
       var pdFee = (feeEl && !feeEl.disabled) ? (parseFloat(feeEl.value)||0) : 0;
-      var sub = cleaningFee + padFee + otherFee + pdFee;
+
+      var soakActive = [1,2,3,4].some(function(n){ var cb = main.querySelector("#rug"+n+"_svc_digester"); return cb && cb.checked; });
+      var soakEl = main.querySelector("#soakFeeView");
+      var soakFee = 0;
+      if(soakEl){
+        if(!soakActive){
+          soakEl.value = "0.00";
+          soakManuallyEdited = false;
+        } else if(!soakManuallyEdited){
+          soakEl.value = autoFees.soakFee.toFixed(2);
+        }
+        soakFee = parseFloat(soakEl.value)||0;
+      }
+
+      var sub = cleaningFee + padFee + soakFee + woolGuardFee + mothFee + otherFee + pdFee;
       var discountPct = Math.min(100, Math.max(0, parseFloat(main.querySelector("#discountPct").value)||0));
       var discountAmt = sub * (discountPct/100);
       var taxableSub = Math.max(0, sub - discountAmt);
@@ -1758,6 +1971,10 @@
       var d = parseFloat(main.querySelector("#deposit").value)||0;
       main.querySelector("#cleaningFeeView").value = cleaningFee.toFixed(2);
       main.querySelector("#padFeeView").value = padFee.toFixed(2);
+      var wgEl = main.querySelector("#woolGuardFeeView");
+      if(wgEl) wgEl.value = woolGuardFee.toFixed(2);
+      var mothEl = main.querySelector("#mothFeeView");
+      if(mothEl) mothEl.value = mothFee.toFixed(2);
       main.querySelector("#subtotalView").value = sub.toFixed(2);
       main.querySelector("#taxView").value = tax.toFixed(2);
       main.querySelector("#totalView").value = total.toFixed(2);
@@ -1769,11 +1986,18 @@
     main.querySelector("#deposit").addEventListener("input", recalcAll);
     main.querySelector("#pdFee").addEventListener("input", recalcAll);
     main.querySelector("#discountPct").addEventListener("input", recalcAll);
+    var soakFeeEl0 = main.querySelector("#soakFeeView");
+    if(soakFeeEl0) soakFeeEl0.addEventListener("input", function(){ soakManuallyEdited = true; recalcAll(); });
     [1,2,3,4].forEach(function(n){
       var dimEl = main.querySelector("#rug"+n+"_dim");
       if(dimEl) dimEl.addEventListener("input", recalcAll);
       var padTypeEl = main.querySelector("#rug"+n+"_padType");
       if(padTypeEl) padTypeEl.addEventListener("change", recalcAll);
+      var padSizeEl = main.querySelector("#rug"+n+"_padSize");
+      if(padSizeEl) padSizeEl.addEventListener("input", recalcAll);
+      main.querySelectorAll('input[name="rug'+n+'_woolGuardSides"], input[name="rug'+n+'_mothSides"]').forEach(function(radio){
+        radio.addEventListener("change", recalcAll);
+      });
     });
     var unlockDiscountBtn = main.querySelector("#unlockDiscount");
     if(unlockDiscountBtn) unlockDiscountBtn.addEventListener("click", function(){
@@ -1973,6 +2197,14 @@
             var miscWrap = main.querySelector("#rug"+n+"_miscWrap");
             if(miscWrap) miscWrap.style.display = cb.checked ? "flex" : "none";
           }
+          if(DESC_BOX_SERVICE_KEYS.indexOf(d.key) !== -1){
+            var descWrap = main.querySelector("#rug"+n+"_"+d.key+"Wrap");
+            if(descWrap) descWrap.style.display = cb.checked ? "flex" : "none";
+          }
+          if(d.key === "woolGuard" || d.key === "moth"){
+            var sidesWrap = main.querySelector("#rug"+n+"_"+d.key+"Wrap");
+            if(sidesWrap) sidesWrap.style.display = cb.checked ? "flex" : "none";
+          }
           if(d.key === "pickupDelivery") updatePdFeeLock();
           else recalcAll();
         });
@@ -1989,9 +2221,18 @@
           svc[d.key] = !!(cb && cb.checked);
         });
         svc.padType = g2("rug"+n+"_padType");
+        svc.padSize = g2("rug"+n+"_padSize");
         svc.miscText = g2("rug"+n+"_miscText");
+        var wgChecked2 = main.querySelector('input[name="rug'+n+'_woolGuardSides"]:checked');
+        svc.woolGuardSides = wgChecked2 ? wgChecked2.value : "";
+        var mothChecked2 = main.querySelector('input[name="rug'+n+'_mothSides"]:checked');
+        svc.mothSides = mothChecked2 ? mothChecked2.value : "";
+        DESC_BOX_SERVICE_KEYS.forEach(function(key){
+          svc[key+"Text"] = g2("rug"+n+"_"+key+"Text");
+        });
         return {
-          description: g2("rug"+n+"_desc"),
+          itemDescription: g2("rug"+n+"_itemDesc"),
+          workNeeded: g2("rug"+n+"_workNeeded"),
           dimensions: g2("rug"+n+"_dim"),
           marks: (o.rugs[n-1] && o.rugs[n-1].marks) || [],
           services: svc
@@ -2013,7 +2254,7 @@
     }
     function isDraftEmpty(d){
       var anyRug = d.rugs.some(function(r){
-        return (r.description && r.description.trim()) || (r.dimensions && r.dimensions.trim())
+        return (r.itemDescription && r.itemDescription.trim()) || (r.workNeeded && r.workNeeded.trim()) || (r.dimensions && r.dimensions.trim())
           || (r.marks && r.marks.length) || SERVICE_DEFS.some(function(sd){ return r.services[sd.key]; });
       });
       return !(d.customer.name || d.customer.phone || d.customer.email || d.customer.address
@@ -2050,13 +2291,15 @@
       + '<span>'+esc(label)+'</span></label>';
   }
   function rugBlock(n, r){
-    r = r || {description:"",dimensions:"",marks:[],services:blankServices()};
+    r = r || {itemDescription:"",workNeeded:"",dimensions:"",marks:[],services:blankServices()};
     var svc = r.services || blankServices();
     return '<div class="rug-col"><h4>Rug #'+n+(n===1?'':' <span style="font-weight:400;color:var(--ink-soft);font-size:11.5px">(optional)</span>')+'</h4>'
-      + '<div class="field"><label for="rug'+n+'_desc">Description &amp; work needed</label>'
-      +   '<textarea id="rug'+n+'_desc" placeholder="e.g. Persian Tabriz, wine stain, fringe wear">'+esc(r.description)+'</textarea></div>'
-      + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 8x9.9 = 8ft × 9ft9in"})
+      + field("Size","rug"+n+"_dim", r.dimensions, {hint:"e.g. 8x9.9 = 8ft \u00d7 9ft9in"})
       + '<div class="rug-sqft-hint" id="rug'+n+'_sqftHint" style="font-size:11.5px;color:var(--ink-soft);margin:-10px 0 12px 2px;min-height:14px"></div>'
+      + '<div class="field"><label for="rug'+n+'_itemDesc">Item description</label>'
+      +   '<textarea id="rug'+n+'_itemDesc" placeholder="e.g. Persian Tabriz, 100% wool">'+esc(r.itemDescription)+'</textarea></div>'
+      + '<div class="field"><label for="rug'+n+'_workNeeded">Work needed</label>'
+      +   '<textarea id="rug'+n+'_workNeeded" placeholder="e.g. wine stain in center, fringe wear">'+esc(r.workNeeded)+'</textarea></div>' 
       + '<div class="rug-diagram-wrap">'
       +   '<div class="rdg-label">Mark, draw a line, or draw a box. Undo removes the last mark, or Clear removes them all.</div>'
       +   '<div class="rdg-tools">'
@@ -2081,12 +2324,35 @@
                   +   '<select id="rug'+n+'_padType"><option value="">Select pad type…</option>'
                   +     ["Durahold","Cushion Air","No Muv","Moisture Lock (thin)"].map(function(opt){ return '<option value="'+opt+'"'+(svc.padType===opt?" selected":"")+'>'+opt+'</option>'; }).join("")
                   +   '</select>'
+                  +   '<label for="rug'+n+'_padSize" style="margin-top:5px">Pad size<span class="hint">The pad piece\u2019s own size \u2014 not necessarily the rug\u2019s. e.g. 8x9.9</span></label>'
+                  +   '<input type="text" id="rug'+n+'_padSize" value="'+esc(svc.padSize||"")+'" placeholder="e.g. 8x9.9">'
                   + '</div>';
               }
               if(d.key === "misc"){
                 row += '<div class="rug-misc-sub" id="rug'+n+'_miscWrap" style="display:'+(svc.misc?"flex":"none")+'">'
                   +   '<label for="rug'+n+'_miscText">Describe miscellaneous work</label>'
                   +   '<input type="text" id="rug'+n+'_miscText" value="'+esc(svc.miscText||"")+'" placeholder="Briefly describe…">'
+                  + '</div>';
+              }
+              if(d.key === "woolGuard" || d.key === "moth"){
+                var sidesField = d.key === "woolGuard" ? "woolGuardSides" : "mothSides";
+                var sidesName = "rug"+n+"_"+sidesField;
+                var sidesVal = svc[sidesField] || "";
+                row += '<div class="rug-misc-sub" id="rug'+n+'_'+d.key+'Wrap" style="display:'+(svc[d.key]?"flex":"none")+'">'
+                  +   '<label>Sides treated</label>'
+                  +   '<div style="display:flex;gap:16px">'
+                  +     '<label style="display:flex;align-items:center;gap:6px;font-weight:400"><input type="radio" name="'+sidesName+'" value="1"'+(sidesVal==="1"?" checked":"")+'> 1 side</label>'
+                  +     '<label style="display:flex;align-items:center;gap:6px;font-weight:400"><input type="radio" name="'+sidesName+'" value="2"'+(sidesVal==="2"?" checked":"")+'> 2 sides</label>'
+                  +   '</div>'
+                  + '</div>';
+              }
+              // A plain description box for every other service — Pickup & Delivery,
+              // Cleaning, Pad, and Misc all have their own dedicated sub-fields above/elsewhere.
+              if(DESC_BOX_SERVICE_KEYS.indexOf(d.key) !== -1){
+                var textKey = d.key+"Text";
+                row += '<div class="rug-misc-sub" id="rug'+n+'_'+d.key+'Wrap" style="display:'+(svc[d.key]?"flex":"none")+'">'
+                  +   '<label for="rug'+n+'_'+d.key+'Text">Describe '+esc(d.label.toLowerCase())+' work</label>'
+                  +   '<input type="text" id="rug'+n+'_'+d.key+'Text" value="'+esc(svc[textKey]||"")+'" placeholder="Briefly describe…">'
                   + '</div>';
               }
               return row;
@@ -2200,7 +2466,15 @@
         svc[d.key] = !!(cb && cb.checked);
       });
       svc.padType = g("rug"+n+"_padType");
+      svc.padSize = g("rug"+n+"_padSize");
       svc.miscText = g("rug"+n+"_miscText");
+      var wgChecked = main.querySelector('input[name="rug'+n+'_woolGuardSides"]:checked');
+      svc.woolGuardSides = wgChecked ? wgChecked.value : "";
+      var mothChecked = main.querySelector('input[name="rug'+n+'_mothSides"]:checked');
+      svc.mothSides = mothChecked ? mothChecked.value : "";
+      DESC_BOX_SERVICE_KEYS.forEach(function(key){
+        svc[key+"Text"] = g("rug"+n+"_"+key+"Text");
+      });
       return svc;
     });
     var anyService = rugServices.some(function(svc){ return SERVICE_DEFS.some(function(d){ return svc[d.key]; }); });
@@ -2209,31 +2483,40 @@
       var n = i+1;
       if(svc.pad && !svc.padType){ mark("rug"+n+"_padType", true); errs.push("padtype"); }
       else mark("rug"+n+"_padType", false);
+      if(svc.pad && (!svc.padSize || !parseRugDimensions(svc.padSize))){ mark("rug"+n+"_padSize", true); errs.push("padsize"); }
+      else mark("rug"+n+"_padSize", false);
       if(svc.misc && !svc.miscText){ mark("rug"+n+"_miscText", true); errs.push("misctext"); }
       else mark("rug"+n+"_miscText", false);
+      if(svc.woolGuard && !svc.woolGuardSides) errs.push("wgsides");
+      if(svc.moth && !svc.mothSides) errs.push("mothsides");
     });
     var pdActive = rugServices.some(function(svc){ return svc.pickupDelivery; });
     var pdFeeVal = parseFloat(g("pdFee"))||0;
     if(pdActive && pdFeeVal <= 0){ mark("pdFee", true); errs.push("pdfee"); }
     else mark("pdFee", false);
 
-    var cleaningSizeOk = true;
+    // Wash/Cleaning, Soak, Wool Guard, and Moth all price off the rug's own Size field —
+    // any rug with one of them checked needs a valid size before it can be submitted.
+    var sizeOk = true;
     rugServices.forEach(function(svc, i){
-      if(!svc.cleaning) return;
+      if(!svc.cleaning && !svc.digester && !svc.woolGuard && !svc.moth) return;
       var n = i+1;
       var dimVal = g("rug"+n+"_dim");
-      if(!dimVal || !parseRugDimensions(dimVal)){ mark("rug"+n+"_dim", true); cleaningSizeOk = false; }
+      if(!dimVal || !parseRugDimensions(dimVal)){ mark("rug"+n+"_dim", true); sizeOk = false; }
       else mark("rug"+n+"_dim", false);
     });
-    if(!cleaningSizeOk) errs.push("cleaningsize");
+    if(!sizeOk) errs.push("cleaningsize");
 
     if(errs.length){
       var msgParts = [];
       if(errs.indexOf("noservice")!==-1) msgParts.push("Select at least one type of work on at least one rug.");
       if(errs.indexOf("padtype")!==-1) msgParts.push("Choose a pad type wherever Pad is checked.");
+      if(errs.indexOf("padsize")!==-1) msgParts.push("Enter a valid pad size (e.g. 8x9.9) wherever Pad is checked, so it can be priced automatically.");
       if(errs.indexOf("misctext")!==-1) msgParts.push("Describe the miscellaneous work wherever it's checked.");
+      if(errs.indexOf("wgsides")!==-1) msgParts.push("Pick 1 or 2 sides wherever Wool Guard is checked.");
+      if(errs.indexOf("mothsides")!==-1) msgParts.push("Pick 1 or 2 sides wherever Moth Treatment is checked.");
       if(errs.indexOf("pdfee")!==-1) msgParts.push("Enter a pickup & delivery fee greater than $0.00.");
-      if(errs.indexOf("cleaningsize")!==-1) msgParts.push("Enter a valid size (e.g. 8x9.9) for every rug with Cleaning checked, so it can be priced automatically.");
+      if(errs.indexOf("cleaningsize")!==-1) msgParts.push("Enter a valid size (e.g. 8x9.9) for every rug with Wash/Cleaning, Soak, Wool Guard, or Moth checked, so it can be priced automatically.");
       if(["name","phone","email","address"].some(function(e){ return errs.indexOf(e)!==-1; })) msgParts.push("Fill in the highlighted fields.");
       main.querySelector("#formMsg").textContent = msgParts.join(" ");
       return;
@@ -2244,7 +2527,7 @@
     var oldRugs = o.rugs || [];
     o.rugs = [1,2,3,4].map(function(n){
       return {
-        description:g("rug"+n+"_desc"), dimensions:g("rug"+n+"_dim"),
+        itemDescription:g("rug"+n+"_itemDesc"), workNeeded:g("rug"+n+"_workNeeded"), dimensions:g("rug"+n+"_dim"),
         marks:(oldRugs[n-1] && oldRugs[n-1].marks) || [],
         services: rugServices[n-1]
       };
@@ -2255,13 +2538,21 @@
     var autoFees = computeAutoFees();
     var cleaningFeeNum = autoFees.cleaningFee;
     var padFeeNum = autoFees.padFee;
+    var woolGuardFeeNum = autoFees.woolGuardFee;
+    var mothFeeNum = autoFees.mothFee;
+    // Soak's fee comes from its own (editable) box, not straight from autoFees — the shop
+    // may have manually overridden the suggested amount, and that override is what gets saved.
+    var soakFeeNum = parseFloat(g("soakFeeView"))||0;
     var otherFeeNum = parseFloat(g("otherFee"))||0;
     var taxOn = !!(main.querySelector("#taxToggle") && main.querySelector("#taxToggle").checked);
     o.pdFee = pdActive ? pdFeeVal : 0;
     o.deliveryDateTime = pdActive ? g("deliveryDateTime") : "";
-    var subtotalNum = cleaningFeeNum + padFeeNum + otherFeeNum + o.pdFee;
+    var subtotalNum = cleaningFeeNum + padFeeNum + soakFeeNum + woolGuardFeeNum + mothFeeNum + otherFeeNum + o.pdFee;
     o.cleaningFee = +cleaningFeeNum.toFixed(2);
     o.padFee = +padFeeNum.toFixed(2);
+    o.soakFee = +soakFeeNum.toFixed(2);
+    o.woolGuardFee = +woolGuardFeeNum.toFixed(2);
+    o.mothFee = +mothFeeNum.toFixed(2);
     o.otherFee = +otherFeeNum.toFixed(2);
     o.subtotal = +subtotalNum.toFixed(2);
     o.taxEnabled = taxOn;
@@ -2299,14 +2590,14 @@
       customerId:null,
       customer:{name:"",phone:"",email:"",address:""},
       rugs:[
-        {description:"",dimensions:"",marks:[],services:blankServices()},
-        {description:"",dimensions:"",marks:[],services:blankServices()},
-        {description:"",dimensions:"",marks:[],services:blankServices()},
-        {description:"",dimensions:"",marks:[],services:blankServices()}
+        {itemDescription:"",workNeeded:"",dimensions:"",marks:[],services:blankServices()},
+        {itemDescription:"",workNeeded:"",dimensions:"",marks:[],services:blankServices()},
+        {itemDescription:"",workNeeded:"",dimensions:"",marks:[],services:blankServices()},
+        {itemDescription:"",workNeeded:"",dimensions:"",marks:[],services:blankServices()}
       ],
       addons:"",
       cancelReason:"", canceledAt:null, statusBeforeCancel:null,
-      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, padFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, deliveryDateTime:"", notes:"" };
+      dropoffDate:todayISO(), readyDate:"", cleaningFee:0, padFee:0, soakFee:0, woolGuardFee:0, mothFee:0, otherFee:"", subtotal:"", taxEnabled:true, cost:"", discountPct:0, deposit:"", pdFee:0, deliveryDateTime:"", notes:"" };
   }
   function getOrder(id){ return state.orders.filter(function(o){return o.id===id;})[0] || null; }
 
@@ -2318,10 +2609,11 @@
     var rugsForDetail = activeRugs(o);
     populatePrint(o);
 
+    var backToCustomer = state.detailReturnView === "customerOrders" && state.custOrdersId;
     main.innerHTML = ''
     + '<div class="page-head"><div><h2>'+esc(o.customer.name)+'</h2>'
     +   '<div class="sub">'+esc(o.number)+' · created '+fmtDate((o.createdAt||"").slice(0,10))+'</div></div>'
-    +   '<button class="btn back" id="backList">← Back to Orders</button></div>'
+    +   '<button class="btn back" id="backList">'+(backToCustomer?"← Back to Customer":"← Back to Orders")+'</button></div>'
 
     + '<div class="detail-actions">'
     +   '<button class="btn sage" id="btnPrint">🖨 Print copy</button>'
@@ -2340,7 +2632,7 @@
     +   '<div class="doc">'
     +     '<div class="doc-head"><div><div class="n">'+esc(o.number)+'</div>'
     +       '<h3>Service Order</h3></div>'
-    +       '<span class="badge '+sm.cls+'" style="align-self:center">'+esc(o.status)+'</span></div>'
+    +       '<span class="badge '+sm.cls+'" style="align-self:center">'+esc(statusLabel(o.status))+'</span></div>'
     +     '<div class="doc-body">'
     +       '<div class="row-pair">'
     +         '<div class="kv"><h4>Customer</h4>'
@@ -2361,7 +2653,9 @@
                 ? rugsForDetail.map(function(rr){
                     var svcLabels = rugServiceLabels(rr);
                     var text = '<div style="font-weight:700;margin-bottom:4px">Rug '+rr.n+(rr.dimensions?' — '+esc(rr.dimensions):'')+'</div>'
-                      + (rr.description?esc(rr.description):'<span style="color:var(--ink-soft);font-style:italic">No description entered.</span>')
+                      + (rr.itemDescription ? '<div><strong>Item:</strong> '+esc(rr.itemDescription)+'</div>' : '')
+                      + (rr.workNeeded ? '<div><strong>Work needed:</strong> '+esc(rr.workNeeded)+'</div>' : '')
+                      + (!rr.itemDescription && !rr.workNeeded ? '<span style="color:var(--ink-soft);font-style:italic">No description entered.</span>' : '')
                       + (svcLabels.length ? '<div style="margin-top:6px">'+svcLabels.map(function(l){ return '<span class="type-pill" style="margin:0 4px 4px 0;display:inline-block">'+esc(l)+'</span>'; }).join("")+'</div>' : '');
                     var diagram = rr.marks && rr.marks.length
                       ? '<div class="rug-diagram-canvas readonly print-rug-diagram">'+rugDiagramSVG(rr.marks)+'</div>'
@@ -2382,7 +2676,7 @@
               ? '<div class="doc-notes" style="margin:0 0 12px">This order is canceled.</div>'
                 + '<button class="btn" id="btnReopen" style="width:100%">↺ Reopen service order</button>'
               : '<div class="status-row" id="statusRow">'
-                + STATUSES.map(function(s){ return '<button class="status-opt'+(o.status===s?" active":"")+'" data-status="'+s+'">'+s+'</button>'; }).join("")
+                + STATUSES.map(function(s){ return '<button class="status-opt'+(o.status===s?" active":"")+'" data-status="'+s+'">'+esc(statusLabel(s))+'</button>'; }).join("")
                 + '</div>'
                 + '<button class="cancel-link" id="btnCancel">⛔ Cancel service order</button>')
     +     '</div>'
@@ -2393,8 +2687,11 @@
               + '</div>'
             : '')
     +     '<div class="panel money-summary"><h4>Payment</h4>'
-    +       '<div class="line"><span>Cleaning fee</span><span class="mono">'+money(o.cleaningFee)+'</span></div>'
+    +       '<div class="line"><span>Wash/Cleaning fee</span><span class="mono">'+money(o.cleaningFee)+'</span></div>'
     +       (Number(o.padFee)?'<div class="line"><span>Pad fee</span><span class="mono">'+money(o.padFee)+'</span></div>':'')
+    +       (Number(o.soakFee)?'<div class="line"><span>Soak fee</span><span class="mono">'+money(o.soakFee)+'</span></div>':'')
+    +       (Number(o.woolGuardFee)?'<div class="line"><span>Wool Guard fee</span><span class="mono">'+money(o.woolGuardFee)+'</span></div>':'')
+    +       (Number(o.mothFee)?'<div class="line"><span>Moth fee</span><span class="mono">'+money(o.mothFee)+'</span></div>':'')
     +       (Number(o.otherFee)?'<div class="line"><span>Other services fee</span><span class="mono">'+money(o.otherFee)+'</span></div>':'')
     +       (o.pdFee?'<div class="line"><span>Pickup &amp; delivery fee</span><span class="mono">'+money(o.pdFee)+'</span></div>':'')
     +       '<div class="line"><span>Subtotal</span><span class="mono">'+money(o.subtotal)+'</span></div>'
@@ -2412,7 +2709,7 @@
     +   '</div>'
     + '</div>';
 
-    main.querySelector("#backList").addEventListener("click", function(){ go("list"); });
+    main.querySelector("#backList").addEventListener("click", function(){ go(backToCustomer ? "customerOrders" : "list"); });
     main.querySelector("#btnEdit").addEventListener("click", function(){ go("edit", o.id); });
     main.querySelector("#btnPrint").addEventListener("click", function(){ populatePrint(o); window.print(); });
     main.querySelector("#btnEmail").addEventListener("click", function(){ emailWorkOrder(o); });
@@ -2442,7 +2739,7 @@
   function kvLine(l,v){ return '<div class="line"><span class="l">'+esc(l)+'</span><span class="v">'+esc(v)+'</span></div>'; }
 
   function setStatus(o, s){
-    o.status = s; touch(o); saveOrders(); toast("Status: "+s); renderDetail();
+    o.status = s; touch(o); saveOrders(); toast("Status: "+statusLabel(s)); renderDetail();
   }
   function cancelOrder(o){
     var reason = window.prompt("Please enter a reason for canceling service order "+o.number+" ("+o.customer.name+"):", "");
@@ -2487,6 +2784,18 @@
     }
     return out;
   }
+  // Same idea as boldUnicode() but bold+italic (Mathematical Sans-Serif Bold Italic block —
+  // there's no digit variant for this one, so digits/punctuation just pass through as-is).
+  function boldItalicUnicode(str){
+    var out = "";
+    for(var i=0;i<str.length;i++){
+      var code = str.charCodeAt(i);
+      if(code>=65 && code<=90) out += String.fromCodePoint(0x1D63C + (code-65));       // A-Z
+      else if(code>=97 && code<=122) out += String.fromCodePoint(0x1D656 + (code-97)); // a-z
+      else out += str[i];
+    }
+    return out;
+  }
   // Shown near the top of every customer email so it's unmissable that replies aren't
   // monitored (the shop sends from a no-reply address) and gives a real way to reach us.
   function noReplyNotice(){
@@ -2501,7 +2810,7 @@
     var s = state.settings;
     var shopName = s.shopName || "Fargo Hanna";
     var rugLines = activeRugs(o).map(function(rr){
-      return "  Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+":  "+(rr.description||"—");
+      return "  Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+":  "+(rugDescText(rr)||"—");
     }).join("\n");
     var body =
       boldUnicode(shopName.toUpperCase())+"\n"+
@@ -2510,7 +2819,7 @@
       noReplyNotice()+"\n"+
       RULE+"\n\n"+
       "Dear "+o.customer.name+",\n\n"+
-      "Thank you for trusting us with your rug. Here's a summary of your order:\n\n"+
+      "Thank you for your business. Here's a summary of your order:\n\n"+
       boldUnicode("CUSTOMER")+"\n"+
       "  "+o.customer.name+"\n"+
       (o.customer.phone?"  "+fmtPhoneDisplay(o.customer.phone)+"\n":"")+
@@ -2523,8 +2832,11 @@
       (rugLines ? boldUnicode("RUGS & WORK")+"\n"+rugLines+"\n\n" : "")+
       (o.addons ? boldUnicode("ADD-ONS")+"\n  "+o.addons+"\n\n" : "")+
       RULE+"\n"+
-      "  Cleaning fee                "+money(o.cleaningFee)+"\n"+
+      "  Wash/Cleaning fee          "+money(o.cleaningFee)+"\n"+
       (Number(o.padFee)?"  Pad fee                    "+money(o.padFee)+"\n":"")+
+      (Number(o.soakFee)?"  Soak fee                   "+money(o.soakFee)+"\n":"")+
+      (Number(o.woolGuardFee)?"  Wool Guard fee             "+money(o.woolGuardFee)+"\n":"")+
+      (Number(o.mothFee)?"  Moth fee                   "+money(o.mothFee)+"\n":"")+
       (Number(o.otherFee)?"  Other services fee         "+money(o.otherFee)+"\n":"")+
       (o.pdFee?"  Pickup & delivery fee      "+money(o.pdFee)+"\n":"")+
       "  Subtotal                    "+money(o.subtotal)+"\n"+
@@ -2534,8 +2846,8 @@
       "  Prepay amount               "+money(o.deposit)+"\n"+
       "  "+boldUnicode("FINAL BALANCE DUE")+"            "+boldUnicode(money(balance(o)))+"\n"+
       RULE+"\n\n"+
-      PRICE_DISCLAIMER+"\n\n"+
-      "We'll be in touch as soon as your rug is ready. Please keep this order number for your records.\n\n"+
+      boldItalicUnicode(PRICE_DISCLAIMER)+"\n\n"+
+      "We'll be in touch as soon as your rug is ready. Please keep this receipt for your records.\n\n"+
       "Warm regards,";
     var subject = shopName+" — Service Order Receipt "+o.number;
     openMail(o.customer.email, subject, body);
@@ -2549,18 +2861,18 @@
       var shopName = s.shopName || "Fargo Hanna";
       var body =
         boldUnicode(shopName.toUpperCase())+"\n"+
-        "Your Rug Is Ready For Pickup\n"+
+        "Your Rug(s) Is Ready For Pickup\n"+
         RULE+"\n"+
         noReplyNotice()+"\n"+
         RULE+"\n\n"+
         "Dear "+o.customer.name+",\n\n"+
-        "Good news — your rug is ready for pickup!\n\n"+
+        "Good news — your rug(s) is ready for pickup!\n\n"+
         "  Service order:   "+o.number+"\n"+
         "  Services:        "+orderServiceSummary(o)+"\n"+
         "  "+boldUnicode("Balance due:")+"     "+boldUnicode(money(balance(o)))+"\n\n"+
-        "Please stop by at your convenience \u2014 we look forward to seeing you.\n\n"+
+        "Please stop by at your earliest convenience \u2014 we look forward to seeing you.\n\n"+
         "Thank you,";
-      openMail(o.customer.email, shopName+" — Your Rug Is Ready ("+o.number+")", body);
+      openMail(o.customer.email, shopName+" — Your Rug(s) Is Ready ("+o.number+")", body);
       renderDetail();
       toast("Marked ready — email drafted in Outlook");
     });
@@ -2603,9 +2915,18 @@
     +   '</div>'
     +   (activeRugs(o).length
           ? activeRugs(o).map(function(rr){
-              var svcLabels = rugServiceLabels(rr);
-              var text = '<h3>Rug '+rr.n+(rr.dimensions?' — '+esc(rr.dimensions):'')+'</h3><div>'+esc(rr.description||"—")+'</div>'
-                + (svcLabels.length ? '<div style="font-size:9.5px;color:#555;margin-top:2px">'+esc(svcLabels.join(", "))+'</div>' : '');
+              var heading = 'Item '+rr.n
+                + (rr.dimensions ? ' — '+esc(rr.dimensions) : '')
+                + (rr.itemDescription ? ' — '+esc(rr.itemDescription) : '');
+              var svcLines = printServiceLines(rr).map(function(s){
+                return '<div style="margin-top:2px"><strong>'+esc(s.label)+'</strong>'
+                  + (s.desc ? ' <span style="font-size:9.5px;color:#555">'+esc(s.desc)+'</span>' : '')
+                  + '</div>';
+              }).join("");
+              var text = '<h3>'+heading+'</h3>'
+                + (rr.workNeeded ? '<div style="font-weight:700;font-style:italic">'+esc(rr.workNeeded)+'</div>' : '')
+                + (!rr.workNeeded && !svcLines ? '<div>—</div>' : '')
+                + svcLines;
               var diagram = rr.marks && rr.marks.length
                 ? '<div class="print-rug-diagram">'+rugDiagramSVG(rr.marks)+'</div>'
                 : '';
@@ -2615,8 +2936,11 @@
             }).join("")
           : '<div class="print-notes"><h3>Description &amp; work to be done</h3><div>—</div></div>')
     +   '<div class="print-money">'
-    +     '<div class="pline"><span>Cleaning fee</span><span>'+money(o.cleaningFee)+'</span></div>'
+    +     '<div class="pline"><span>Wash/Cleaning fee</span><span>'+money(o.cleaningFee)+'</span></div>'
     +     (Number(o.padFee)?'<div class="pline"><span>Pad fee</span><span>'+money(o.padFee)+'</span></div>':'')
+    +     (Number(o.soakFee)?'<div class="pline"><span>Soak fee</span><span>'+money(o.soakFee)+'</span></div>':'')
+    +     (Number(o.woolGuardFee)?'<div class="pline"><span>Wool Guard fee</span><span>'+money(o.woolGuardFee)+'</span></div>':'')
+    +     (Number(o.mothFee)?'<div class="pline"><span>Moth fee</span><span>'+money(o.mothFee)+'</span></div>':'')
     +     (Number(o.otherFee)?'<div class="pline"><span>Other services fee</span><span>'+money(o.otherFee)+'</span></div>':'')
     +     (o.pdFee?'<div class="pline"><span>Pickup &amp; delivery fee</span><span>'+money(o.pdFee)+'</span></div>':'')
     +     '<div class="pline"><span>Subtotal</span><span>'+money(o.subtotal)+'</span></div>'
@@ -2627,7 +2951,6 @@
     +     '<div class="pline"><span>Final balance due at pickup</span><span>'+money(balance(o))+'</span></div>'
     +   '</div>'
     +   '<div class="print-disclaimer">'+esc(PRICE_DISCLAIMER)+'</div>'
-    +   '<div class="print-sign"><div class="sig">Customer signature</div><div class="sig">Date</div></div>'
     +   '<div class="print-foot">Please retain this receipt · Present order number '+esc(o.number)+' at pickup · Thank you for your business</div>'
     +   '<div class="guard" style="margin-top:14px"></div>'
     + '</div>';
@@ -2706,9 +3029,25 @@
     +   '<p class="desc">Works in any browser, no setup needed. Use this as a backup to the backup.</p>'
     +   '<div class="backup-actions">'
     +     '<button class="btn madder" id="expJson">⬇ Download backup (.json)</button>'
-    +     '<button class="btn" id="expCsv">⬇ Export list (.csv for Excel)</button>'
     +     '<button class="btn ghost" id="impJson">⬆ Restore from backup</button>'
     +     '<input type="file" id="impFile" accept=".json,application/json" style="display:none">'
+    +   '</div>'
+    +   '<div class="callout" style="margin-top:16px"><strong>Spreadsheet export</strong> — scope to a time range and/or paid orders only for easy accounting, or leave as All time for everything.</div>'
+    +   '<div class="grid" style="margin-top:12px;align-items:end">'
+    +     '<div class="field"><label>Range</label><select id="csvRangeMode">'
+    +       '<option value="all">All time</option>'
+    +       '<option value="year">Calendar year</option>'
+    +       '<option value="month">Specific month</option>'
+    +     '</select></div>'
+    +     '<div class="field" id="csvYearWrap" style="display:none"><label>Year</label><select id="csvYear">'+csvYearOptions()+'</select></div>'
+    +     '<div class="field" id="csvMonthWrap" style="display:none"><label>Month</label><select id="csvMonth">'+csvMonthOptions()+'</select></div>'
+    +   '</div>'
+    +   '<label style="display:flex;align-items:center;gap:8px;margin:14px 0 4px;font-size:14px;cursor:pointer">'
+    +     '<input type="checkbox" id="csvPaidOnly"> Paid only <span class="hint">— orders with a deposit or payment on file</span>'
+    +   '</label>'
+    +   '<div class="backup-actions" style="margin-top:10px">'
+    +     '<button class="btn" id="expCsv">⬇ Export list (.csv for Excel)</button>'
+    +     '<button class="btn" id="expXlsx">⬇ Export list (.xlsx for Excel)</button>'
     +   '</div>'
     + '</div>';
 
@@ -2737,6 +3076,12 @@
     });
     main.querySelector("#expJson").addEventListener("click", exportJSON);
     main.querySelector("#expCsv").addEventListener("click", exportCSV);
+    main.querySelector("#expXlsx").addEventListener("click", exportXLSX);
+    var csvRangeMode = main.querySelector("#csvRangeMode");
+    if(csvRangeMode) csvRangeMode.addEventListener("change", function(){
+      main.querySelector("#csvYearWrap").style.display = csvRangeMode.value === "all" ? "none" : "flex";
+      main.querySelector("#csvMonthWrap").style.display = csvRangeMode.value === "month" ? "flex" : "none";
+    });
     var impFile = main.querySelector("#impFile");
     main.querySelector("#impJson").addEventListener("click", function(){ impFile.click(); });
     impFile.addEventListener("change", importJSON);
@@ -2762,7 +3107,7 @@
     function orderRow(o, dt){
       return '<div class="pd-row" data-id="'+o.id+'">'
         + '<div><span class="num">'+esc(o.number)+'</span><span class="who">'+esc(o.customer.name)+'</span></div>'
-        + '<div class="pd-row-meta">'+esc(dt)+' \u00b7 '+esc(o.status)+'</div>'
+        + '<div class="pd-row-meta">'+esc(dt)+' \u00b7 '+esc(statusLabel(o.status))+'</div>'
         + '</div>';
     }
     function apptRow(a){
@@ -2807,6 +3152,7 @@
     main.querySelectorAll(".pd-row[data-id]").forEach(function(el){
       el.addEventListener("click", function(e){
         if(e.target.closest(".pd-remove-appt")) return;
+        state.detailReturnView = "list";
         go("detail", el.dataset.id);
       });
     });
@@ -2862,15 +3208,13 @@
     });
   }
 
-  // Flat per-order services with no automatic sizing/rate math yet — priced here as a
-  // single dollar amount, charged manually via the Other Services Fee field on an order.
+  // Custom in-store pricing, no automatic sizing/rate math — charged manually via the
+  // Other Services Fee field on an order. (Soak, Wool Guard, and Moth Treatment used to be
+  // in this list too, but now calculate automatically from each rug's Size field instead.)
   var FLAT_SERVICE_DEFS = [
     {key:"repair", label:"Repair"},
-    {key:"digester", label:"Digester"},
     {key:"storage", label:"Storage"},
     {key:"appraisal", label:"Appraisal"},
-    {key:"woolGuard", label:"Wool Guard"},
-    {key:"moth", label:"Moth Treatment"},
     {key:"misc", label:"Miscellaneous"}
   ];
   function renderServicesMenu(){
@@ -2878,10 +3222,10 @@
     var padTypes = Object.keys(sp.pad.types);
     main.innerHTML = ''
     + '<div class="page-head"><div><h2>Services Menu</h2>'
-    +   '<div class="sub">The shop\u2019s price sheet. Cleaning and Pad calculate automatically on a service order from each rug\u2019s size; everything else is priced here and applied manually for now.</div></div></div>'
+    +   '<div class="sub">The shop\u2019s price sheet. Wash/Cleaning and Pad calculate automatically on a service order from each rug\u2019s size; everything else is priced here and applied manually for now.</div></div></div>'
 
     + '<div class="settings-block">'
-    +   '<h3>Cleaning</h3>'
+    +   '<h3>Wash/Cleaning</h3>'
     +   '<p class="desc">Priced per square foot, calculated automatically from each rug\u2019s Size field. A per-rug minimum applies below that.</p>'
     +   '<div class="grid thirds">'
     +     '<div class="field"><label>Rate (per sq ft)</label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcCleaningRate" value="'+esc(sp.cleaning.rate)+'"></div></div>'
@@ -2896,6 +3240,33 @@
     +     padTypes.map(function(pt){
             return '<div class="field"><label>'+esc(pt)+' <span class="hint">per sq ft</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" class="svcPadInput" data-padtype="'+esc(pt)+'" value="'+esc(sp.pad.types[pt])+'"></div></div>';
           }).join("")
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="settings-block">'
+    +   '<h3>Soak</h3>'
+    +   '<p class="desc">Priced per square foot, calculated automatically from each rug\u2019s Size field, with a per-rug minimum. Unlike Wash/Cleaning &amp; Pad, this fee stays editable on an order so it can be adjusted by hand when needed.</p>'
+    +   '<div class="grid thirds">'
+    +     '<div class="field"><label>Rate (per sq ft)</label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcSoakRate" value="'+esc(sp.digester.rate)+'"></div></div>'
+    +     '<div class="field"><label>Minimum fee <span class="hint">per rug</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcSoakMin" value="'+esc(sp.digester.minimum)+'"></div></div>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="settings-block">'
+    +   '<h3>Wool Guard</h3>'
+    +   '<p class="desc">Priced per square foot from each rug\u2019s Size field, by number of sides treated \u2014 chosen with a quick 1-side/2-side pick on the order.</p>'
+    +   '<div class="grid thirds">'
+    +     '<div class="field"><label>1 side <span class="hint">per sq ft</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcWoolGuard1" value="'+esc(sp.woolGuard.rate1)+'"></div></div>'
+    +     '<div class="field"><label>2 sides <span class="hint">per sq ft</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcWoolGuard2" value="'+esc(sp.woolGuard.rate2)+'"></div></div>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="settings-block">'
+    +   '<h3>Moth Treatment</h3>'
+    +   '<p class="desc">Priced per square foot from each rug\u2019s Size field, by number of sides treated \u2014 chosen with a quick 1-side/2-side pick on the order.</p>'
+    +   '<div class="grid thirds">'
+    +     '<div class="field"><label>1 side <span class="hint">per sq ft</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcMoth1" value="'+esc(sp.moth.rate1)+'"></div></div>'
+    +     '<div class="field"><label>2 sides <span class="hint">per sq ft</span></label><div class="money-wrap"><input type="number" step="0.01" min="0" id="svcMoth2" value="'+esc(sp.moth.rate2)+'"></div></div>'
     +   '</div>'
     + '</div>'
 
@@ -2933,30 +3304,8 @@
     +   '</table>'
     + '</div>'
 
-    + '<div class="settings-block">'
-    +   '<h3>Retail &amp; consumables <span class="hint">reference only</span></h3>'
-    +   '<p class="desc">Counter items from the price sheet. These are <strong>reference pricing only</strong> for this first pass \u2014 not yet wired into automatic order calculation, since there\u2019s no line-item picker for retail SKUs on a service order yet.</p>'
-    +   '<table style="width:100%;border-collapse:collapse">'
-    +     '<thead><tr>'
-    +       '<th style="text-align:left;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)">Item</th>'
-    +       '<th style="text-align:left;padding:8px 6px;border-bottom:1.5px solid var(--line);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)">Price</th>'
-    +     '</tr></thead>'
-    +     '<tbody>'
-    +       Object.keys(sp.retail).map(function(key){
-              var val = sp.retail[key];
-              return '<tr>'
-                + '<td style="padding:10px 6px;border-bottom:1px solid var(--line-soft)">'+esc(key)+'</td>'
-                + '<td style="padding:10px 6px;border-bottom:1px solid var(--line-soft)">'
-                +   '<div class="money-wrap" style="max-width:150px"><input type="number" step="0.01" min="0" class="svcRetailInput" data-key="'+esc(key)+'" value="'+(val!==""&&val!=null?esc(val):"")+'" placeholder="0.00"></div>'
-                + '</td>'
-                + '</tr>';
-            }).join("")
-    +     '</tbody>'
-    +   '</table>'
-    + '</div>'
-
     + '<div style="margin:4px 0 24px"><button class="btn primary" id="saveSvcPrices">Save pricing</button></div>'
-    + '<div class="callout"><strong>How this is used:</strong> On a service order, checking Cleaning or Pad and entering a rug\u2019s size (e.g. 8x9.9 = 8ft \u00d7 9ft9in) prices that rug automatically from the rates above, with Cleaning\u2019s minimum applied when the calculated fee is lower. Pickup &amp; Delivery pre-fills the Local rate the moment it\u2019s checked. Everything else still uses the Other Services Fee field on an order until its pricing flows through automatically.</div>';
+    + '<div class="callout"><strong>How this is used:</strong> On a service order, checking Wash/Cleaning or Pad and entering a rug\u2019s size (e.g. 8x9.9 = 8ft \u00d7 9ft9in) prices that rug automatically from the rates above, with Wash/Cleaning\u2019s minimum applied when the calculated fee is lower. Pickup &amp; Delivery pre-fills the Local rate the moment it\u2019s checked. Everything else still uses the Other Services Fee field on an order until its pricing flows through automatically.</div>';
 
     main.querySelector("#saveSvcPrices").addEventListener("click", function(){
       var newSp = {
@@ -2969,7 +3318,18 @@
           local: parseFloat(main.querySelector("#svcPdLocal").value)||0,
           extended: parseFloat(main.querySelector("#svcPdExtended").value)||0
         },
-        retail: {}
+        digester: {
+          rate: parseFloat(main.querySelector("#svcSoakRate").value)||0,
+          minimum: parseFloat(main.querySelector("#svcSoakMin").value)||0
+        },
+        woolGuard: {
+          rate1: parseFloat(main.querySelector("#svcWoolGuard1").value)||0,
+          rate2: parseFloat(main.querySelector("#svcWoolGuard2").value)||0
+        },
+        moth: {
+          rate1: parseFloat(main.querySelector("#svcMoth1").value)||0,
+          rate2: parseFloat(main.querySelector("#svcMoth2").value)||0
+        }
       };
       main.querySelectorAll(".svcPadInput").forEach(function(inp){
         newSp.pad.types[inp.dataset.padtype] = parseFloat(inp.value)||0;
@@ -2977,10 +3337,6 @@
       main.querySelectorAll(".svcPriceInput").forEach(function(inp){
         var v = inp.value.trim();
         newSp[inp.dataset.key] = v===""? "" : (parseFloat(v)||0);
-      });
-      main.querySelectorAll(".svcRetailInput").forEach(function(inp){
-        var v = inp.value.trim();
-        newSp.retail[inp.dataset.key] = v===""? "" : (parseFloat(v)||0);
       });
       state.settings.servicePrices = migrateServicePrices(newSp);
       saveSettings();
@@ -3000,30 +3356,136 @@
     var d=new Date();
     return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")+"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0");
   }
+  var MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  // The date each order is filtered by for CSV range-scoping — dropoffDate is always set
+  // (defaults to the day the order is created), so it's a reliable, always-present ISO date.
+  function orderFilterDate(o){ return (o.dropoffDate || (o.createdAt||"").slice(0,10) || ""); }
+  // Years present across existing orders, newest first, for the CSV year-picker; falls back
+  // to the current year alone if there are no orders yet.
+  function csvYearOptions(){
+    var years = {};
+    state.orders.forEach(function(o){ var d=orderFilterDate(o); if(d) years[d.slice(0,4)] = true; });
+    var list = Object.keys(years).sort().reverse();
+    if(!list.length) list = [String(new Date().getFullYear())];
+    return list.map(function(y){ return '<option value="'+y+'">'+y+'</option>'; }).join("");
+  }
+  function csvMonthOptions(){
+    return MONTH_NAMES.map(function(m,i){ return '<option value="'+(i+1)+'">'+m+'</option>'; }).join("");
+  }
   function exportJSON(){
     var data = { app:"Fargo Hanna Service Orders", version:2, exportedAt:new Date().toISOString(),
                  settings:state.settings, orders:state.orders, customers:state.customers, pickupAppts:state.pickupAppts };
     download("fargo-hanna-backup-"+stamp()+".json", JSON.stringify(data,null,2), "application/json");
     toast("Backup downloaded — save it to OneDrive");
   }
-  function exportCSV(){
-    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Cleaning Fee","Pad Fee","Other Fee","PD Fee","Subtotal","Tax","Total","Discount %","Prepay","Final Balance Due"];
-    var rows = state.orders.map(function(o){
+  // "Paid" = the shop has actually received money on this order — either a deposit/prepay
+  // was taken, or it's been marked fully Paid & Picked Up. Used by the accounting export
+  // filters so the shop can pull just the revenue that's actually come in.
+  function isPaidOrder(o){
+    return (Number(o.deposit)||0) > 0 || o.status === "Picked Up";
+  }
+  // Shared row-building + range/paid-only scoping logic used by both the CSV and XLSX
+  // exports, so the two stay in sync. Money/percent columns are returned as raw Numbers
+  // (not pre-formatted strings) so the XLSX export can apply real numeric cell formats;
+  // exportCSV formats them to fixed-decimal strings itself when it serializes to text.
+  function buildExportData(){
+    var modeEl = main.querySelector("#csvRangeMode");
+    var mode = modeEl ? modeEl.value : "all";
+    var yearEl = main.querySelector("#csvYear");
+    var monthEl = main.querySelector("#csvMonth");
+    var year = yearEl ? yearEl.value : String(new Date().getFullYear());
+    var month = monthEl ? monthEl.value : String(new Date().getMonth()+1);
+    var paidOnlyEl = main.querySelector("#csvPaidOnly");
+    var paidOnly = !!(paidOnlyEl && paidOnlyEl.checked);
+
+    var scoped = state.orders;
+    var fileParts = [], labelParts = [];
+    if(mode === "year"){
+      scoped = scoped.filter(function(o){ return orderFilterDate(o).slice(0,4) === year; });
+      fileParts.push(year); labelParts.push(year);
+    } else if(mode === "month"){
+      var mm = String(month).padStart(2,"0");
+      scoped = scoped.filter(function(o){ return orderFilterDate(o).slice(0,7) === (year+"-"+mm); });
+      fileParts.push(year+"-"+mm); labelParts.push(MONTH_NAMES[Number(month)-1]+" "+year);
+    }
+    if(paidOnly){
+      scoped = scoped.filter(isPaidOrder);
+      fileParts.push("paid"); labelParts.push("paid only");
+    }
+    var fileSuffix = fileParts.length ? "-"+fileParts.join("-") : "";
+    var rangeLabel = labelParts.length ? " ("+labelParts.join(", ")+")" : "";
+
+    var head = ["Number","Status","Services","Customer","Phone","Email","Description","Dropped off","Expected ready","Wash/Cleaning Fee","Pad Fee","Soak Fee","Wool Guard Fee","Moth Fee","Other Fee","PD Fee","Subtotal","Tax","Total","Discount %","Prepay","Final Balance Due"];
+    var rows = scoped.map(function(o){
       var rugText = activeRugs(o).map(function(rr){
-        return "Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+": "+(rr.description||"");
+        return "Rug "+rr.n+(rr.dimensions?" ("+rr.dimensions+")":"")+": "+(rugDescText(rr)||"");
       }).join(" | ");
-      var taxAmtVal = taxAmt(o);
-      return [o.number,o.status,orderServiceSummary(o),o.customer.name,fmtPhoneDisplay(o.customer.phone),o.customer.email,
+      return [o.number,statusLabel(o.status),orderServiceSummary(o),o.customer.name,fmtPhoneDisplay(o.customer.phone),o.customer.email,
         rugText.replace(/\s+/g," "),o.dropoffDate,o.readyDate,
-        (Number(o.cleaningFee)||0).toFixed(2), (Number(o.padFee)||0).toFixed(2), (Number(o.otherFee)||0).toFixed(2), (Number(o.pdFee)||0).toFixed(2),
-        (Number(o.subtotal)||0).toFixed(2), taxAmtVal.toFixed(2),
-        (Number(o.cost)||0).toFixed(2), (Number(o.discountPct)||0).toFixed(1), (Number(o.deposit)||0).toFixed(2), balance(o).toFixed(2)];
+        Number(o.cleaningFee)||0, Number(o.padFee)||0, Number(o.soakFee)||0, Number(o.woolGuardFee)||0, Number(o.mothFee)||0, Number(o.otherFee)||0, Number(o.pdFee)||0,
+        Number(o.subtotal)||0, taxAmt(o),
+        Number(o.cost)||0, Number(o.discountPct)||0, Number(o.deposit)||0, balance(o)];
     });
-    var csv = [head].concat(rows).map(function(r){
+    // Column indexes (0-based) that hold dollar amounts vs. the one percent column —
+    // reused by exportCSV for fixed-decimal formatting and by exportXLSX for cell number formats.
+    return { head: head, rows: rows, fileSuffix: fileSuffix, rangeLabel: rangeLabel,
+      moneyCols: [9,10,11,12,13,14,15,16,17,18,20,21], pctCol: 19 };
+  }
+  function exportCSV(){
+    var d = buildExportData();
+    var textRows = d.rows.map(function(r){
+      return r.map(function(v,i){
+        if(d.moneyCols.indexOf(i)!==-1) return Number(v).toFixed(2);
+        if(i===d.pctCol) return Number(v).toFixed(1);
+        return v;
+      });
+    });
+    var csv = [d.head].concat(textRows).map(function(r){
       return r.map(function(c){ var v=String(c==null?"":c); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(",");
     }).join("\r\n");
-    download("fargo-hanna-orders-"+stamp()+".csv", "\ufeff"+csv, "text/csv");
-    toast("CSV exported");
+    download("fargo-hanna-orders"+d.fileSuffix+"-"+stamp()+".csv", "\ufeff"+csv, "text/csv");
+    toast(d.rows.length+" order"+(d.rows.length===1?"":"s")+" exported"+d.rangeLabel);
+  }
+  // Lazily loads the SheetJS (xlsx) library from a CDN the first time an .xlsx export is
+  // requested — it isn't bundled in this single-file app, so this needs internet access at
+  // export time (unlike the CSV export, which works fully offline).
+  function loadXLSXLib(callback){
+    if(window.XLSX){ callback(); return; }
+    var existing = document.getElementById("xlsxLibScript");
+    if(existing){
+      existing.addEventListener("load", callback);
+      existing.addEventListener("error", function(){ alert("Couldn\u2019t load the Excel export library — check your internet connection and try again, or use the CSV export instead."); });
+      return;
+    }
+    var s = document.createElement("script");
+    s.id = "xlsxLibScript";
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = callback;
+    s.onerror = function(){ alert("Couldn\u2019t load the Excel export library — check your internet connection and try again, or use the CSV export instead."); };
+    document.head.appendChild(s);
+  }
+  function exportXLSX(){
+    loadXLSXLib(function(){
+      try {
+        var d = buildExportData();
+        var ws = XLSX.utils.aoa_to_sheet([d.head].concat(d.rows));
+        ws['!cols'] = d.head.map(function(h){ return { wch: Math.max(10, h.length + 2) }; });
+        for(var r=1; r<=d.rows.length; r++){
+          d.moneyCols.forEach(function(ci){
+            var addr = XLSX.utils.encode_cell({r:r, c:ci});
+            if(ws[addr]) ws[addr].z = '"$"#,##0.00';
+          });
+          var pctAddr = XLSX.utils.encode_cell({r:r, c:d.pctCol});
+          if(ws[pctAddr]) ws[pctAddr].z = '0.0"%"';
+        }
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Service Orders");
+        XLSX.writeFile(wb, "fargo-hanna-orders"+d.fileSuffix+"-"+stamp()+".xlsx");
+        toast(d.rows.length+" order"+(d.rows.length===1?"":"s")+" exported"+d.rangeLabel);
+      } catch(e){
+        alert("Couldn\u2019t build the Excel file. Try the CSV export instead.");
+      }
+    });
   }
   function importJSON(e){
     var file = e.target.files[0]; if(!file) return;
