@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Fargo Hanna Oriental Rugs — Service Orders</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#223154" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <style>
   /* ===========================================================
      Fargo Hanna Oriental Rugs — Work Order System
@@ -3619,6 +3623,17 @@
   if(isAuthed()) showApp();
   else showLogin();
 })();
+</script>
+<script>
+// Registers the service worker so this can be installed as a desktop/home-screen app
+// and keeps working if the connection drops. Wrapped defensively: browsers that don't
+// support service workers (or serving the file directly via file://, which blocks them)
+// just skip this silently — the app runs exactly the same either way.
+if("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("./sw.js").catch(function(){ /* offline install just isn't available this time — no big deal */ });
+  });
+}
 </script>
 </body>
 </html>
